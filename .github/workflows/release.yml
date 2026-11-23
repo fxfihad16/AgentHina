@@ -72,7 +72,15 @@ jobs:
       # R8 mapping of the arm64 APK, to decode its crash stack traces (retrace). The x86_64 build below
       # writes the same path, so copy it now.
       - name: Save arm64 R8 mapping
-        run: zip -j "output/AgentHina-${{ steps.version.outputs.tag }}-mapping.zip" app/build/outputs/mapping/shareable/release/mapping.txt
+        run: |
+          MAPPING=$(find app/build/outputs/mapping -name mapping.txt | head -n 1)
+          if [ -n "$MAPPING" ]; then
+            echo "Mapping file: $MAPPING"
+            zip -j "output/AgentHina-${{ steps.version.outputs.tag }}-mapping.zip" "$MAPPING"
+          else
+            echo "No R8 mapping.txt found under app/build/outputs/mapping - skipping (mapping is only for crash retrace)"
+            find app/build/outputs/mapping -type f | head -n 20 || true
+          fi
 
       # AgentHina-v<version>-chroot.apk: the arm64 app with the Ubuntu chroot's Linux bridge (rooted phones). The normal
       # APK above leaves that bridge out and installs this one over itself from its chroot page; the chroot app's
@@ -84,7 +92,15 @@ jobs:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
       - name: Save chroot R8 mapping
-        run: zip -j "output/AgentHina-${{ steps.version.outputs.tag }}-chroot-mapping.zip" app/build/outputs/mapping/shareable/release/mapping.txt
+        run: |
+          MAPPING=$(find app/build/outputs/mapping -name mapping.txt | head -n 1)
+          if [ -n "$MAPPING" ]; then
+            echo "Mapping file: $MAPPING"
+            zip -j "output/AgentHina-${{ steps.version.outputs.tag }}-chroot-mapping.zip" "$MAPPING"
+          else
+            echo "No R8 mapping.txt found under app/build/outputs/mapping - skipping (mapping is only for crash retrace)"
+            find app/build/outputs/mapping -type f | head -n 20 || true
+          fi
 
       # AgentHina-v<version>-x86_64.apk, for x86_64 devices (emulators, Intel/AMD Chromebooks), with the chroot's Linux
       # bridge too; the x86_64 app's updater downloads this one. Its bridge links through the Android NDK's clang,
@@ -96,7 +112,15 @@ jobs:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
       - name: Save x86_64 R8 mapping
-        run: zip -j "output/AgentHina-${{ steps.version.outputs.tag }}-x86_64-mapping.zip" app/build/outputs/mapping/shareable/release/mapping.txt
+        run: |
+          MAPPING=$(find app/build/outputs/mapping -name mapping.txt | head -n 1)
+          if [ -n "$MAPPING" ]; then
+            echo "Mapping file: $MAPPING"
+            zip -j "output/AgentHina-${{ steps.version.outputs.tag }}-x86_64-mapping.zip" "$MAPPING"
+          else
+            echo "No R8 mapping.txt found under app/build/outputs/mapping - skipping (mapping is only for crash retrace)"
+            find app/build/outputs/mapping -type f | head -n 20 || true
+          fi
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
