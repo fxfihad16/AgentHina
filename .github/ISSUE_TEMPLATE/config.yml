@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 User guide
+    url: https://github.com/fxfihad16/AgentHina/blob/standalone/user_docs/README.md
+    about: Read this first. Many "bugs" are explained here.
+  - name: 🖥️ Server mode (VPS) guide
+    url: https://github.com/fxfihad16/AgentHina/blob/standalone/docs/remote-server.md
+    about: Setting up the bridge on your own server, SSH tunnel, nginx / Caddy, debugging.

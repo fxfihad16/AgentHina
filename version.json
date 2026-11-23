@@ -1,0 +1,9 @@
+{
+  "changelog": [
+    "Agent Hina v1.0.0 — first release"
+  ],
+  "is_critical": false,
+  "min_supported_version_code": 1,
+  "version_code": 1,
+  "version_name": "1.0.0"
+}
