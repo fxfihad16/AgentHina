@@ -674,9 +674,9 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
 
-                                // Gemmy: floating cartoon buddy (drag/fling, tap, double-tap, long-press menu; reacts to the agent working).
+                                // Hina: floating portrait buddy (drag/fling, tap, double-tap, long-press menu; reacts to the agent working).
                                 // Shown after its one-time intro was answered and while on in Settings → Appearance.
-                                ai.hina.io.ui.components.GemmyOverlay(
+                                ai.hina.io.ui.components.HinaOverlay(
                                     prefs = chatViewModel.authPreferences,
                                     agentWorking = chatViewModel.isCurrentChatActivelyRunning
                                 )

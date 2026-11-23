@@ -14,13 +14,11 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -39,16 +37,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -58,8 +60,10 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.channels.Channel
@@ -77,21 +81,22 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /*
- * "Gemmy": a small cartoon buddy that floats over every screen of the app.
+ * "Hina": a small portrait of Hina that floats over every screen of the app.
  *
- * Drawn entirely with a Compose Canvas: no images, no animation libraries. One frame loop advances a tiny
+ * The portrait is the body-crop art (drawable-nodpi/hina_mascot.png) in a rounded portrait frame; the hearts,
+ * sparkles and "z"s are drawn with a Compose Canvas. No animation libraries: one frame loop advances a tiny
  * simulation (springs, fling physics, particles). Only the draw and placement phases read its per-frame state,
  * so it animates without recomposing.
  *
  * Power: full frame rate only while something moves; ~30 fps while just hovering. After 5 s without interaction it
- * eases into a still pose and the loop stops requesting frames entirely (zero CPU), waking only for a blink
- * (every 3–7 s), an idle trick (every 18–42 s), a snore while asleep, or a glint while the agent works; any touch
- * or agent state change wakes it at once. Compose also pauses the loop while the app is in the background.
+ * eases into a still pose and the loop stops requesting frames entirely (zero CPU), waking only for an idle trick
+ * (every 18–42 s), a snore while asleep, or a glint while the agent works; any touch or agent state change wakes
+ * it at once. Compose also pauses the loop while the app is in the background.
  *
  * Interactions: drag & fling it (it bounces off the screen edges; shake it and it gets dizzy), tap (random
  * reactions; poke it 5 times fast and it gets angry), double-tap (spin), long-press (menu: Dance / Nap / Hide).
- * On its own it wanders, waves, hops, spins, yawns and falls asleep when left alone. While the agent is working
- * it thinks (glowing antenna, orbiting dots) and celebrates when the turn finishes.
+ * On its own it wanders, hops, spins, yawns and falls asleep when left alone. While the agent is working
+ * it thinks (glints rising above it) and celebrates when the turn finishes.
  */
 
 private const val ID_BODY = "mascot_body"
@@ -109,35 +114,35 @@ private const val SLEEP_AFTER_S = 50f // falls asleep after this long untouched
 private val MascotInk = Color(0xFF2E2A6B)
 private val MascotText = Color(0xFF1B1840)
 
-private val HELLO_LINES = listOf("Hi! 👋", "Hey there! 😊", "Hello, friend! ✨")
+private val HELLO_LINES = listOf("Hi there!", "Hey, Fihad!", "Hello, friend!")
 private val TAP_LINES = listOf(
-    "Hehe, that tickles! 😆", "Need a hand? ✨", "I'm Gemmy! 💜", "Let's build something cool 🚀",
-    "Bugs? Where?! 🐛", "You're doing great! 🌟", "Coffee break? ☕", "Boop! 👉"
+    "Hehe, that tickles!", "Need a hand?", "I'm Hina!", "Let's build something cool",
+    "Bugs? Where?!", "You're doing great!", "Coffee break?", "Boop!"
 )
-private val GRAB_LINES = listOf("Woah! 😲", "Where are we going?", "Up we go! 🎈", "Careful with me!")
-private val FLING_LINES = listOf("Wheeee! 🚀", "Yaaay! 🎢", "Woohoo!")
-private val OUCH_LINES = listOf("Ouch! 💫", "Oof!", "Bonk! 🤕")
-private val DIZZY_LINES = listOf("Woah… dizzy… 😵‍💫", "The room is spinning… 💫")
-private val ANGRY_LINES = listOf("Hey! Stop poking! 😤", "Grr… that's enough! 😠")
-private val WAKE_LINES = listOf("Huh?! I'm awake! 😳", "Five more minutes… 😪", "Wha— oh, hi! 👀")
-private val WORK_LINES = listOf("On it! 🛠️", "Thinking… 🤔", "Agent is cooking 🍳")
-private val DONE_LINES = listOf("Done! ✨", "Ta-da! 🎉", "All finished! 🙌")
+private val GRAB_LINES = listOf("Woah!", "Where are we going?", "Up we go!", "Careful with me!")
+private val FLING_LINES = listOf("Wheeee!", "Yaaay!", "Woohoo!")
+private val OUCH_LINES = listOf("Ouch!", "Oof!", "Bonk!")
+private val DIZZY_LINES = listOf("Woah... dizzy...", "The room is spinning...")
+private val ANGRY_LINES = listOf("Hey! Stop poking!", "Grr... that's enough!")
+private val WAKE_LINES = listOf("Huh?! I'm awake!", "Five more minutes...", "Wha- oh, hi!")
+private val WORK_LINES = listOf("On it!", "Thinking...", "Agent is cooking")
+private val DONE_LINES = listOf("Done!", "Ta-da!", "All finished!")
 
 private enum class Mood { NORMAL, HAPPY, LOVE, SURPRISED, DIZZY, SLEEP, ANGRY, THINKING }
 
 private enum class Trick { NONE, WANDER, WAVE, HOP, SPIN, DANCE, LOOK_AROUND, YAWN }
 
 /**
- * The app-wide overlay: shows Gemmy only once the one-time intro was answered (so it never pops up during setup)
+ * The app-wide overlay: shows Hina only once the one-time intro was answered (so it never pops up during setup)
  * and while it is enabled in Settings → Appearance.
  */
 @Composable
-fun GemmyOverlay(
+fun HinaOverlay(
     prefs: ai.hina.io.data.preferences.AuthPreferences,
     agentWorking: StateFlow<Boolean>
 ) {
-    val enabled by prefs.isGemmyEnabled.collectAsState(initial = false)
-    val introSeen by prefs.hasSeenGemmyIntro.collectAsState(initial = false)
+    val enabled by prefs.isHinaEnabled.collectAsState(initial = false)
+    val introSeen by prefs.hasSeenHinaIntro.collectAsState(initial = false)
     if (enabled && introSeen) FloatingMascot(agentWorking = agentWorking)
 }
 
@@ -152,6 +157,7 @@ fun FloatingMascot(
     val density = LocalDensity.current.density
     val sim = remember(density) { MascotSim(density) }
     val art = remember(density) { MascotArt(density) }
+    val portrait = ImageBitmap.imageResource(ai.hina.io.R.drawable.hina_mascot)
 
     val haptic = LocalHapticFeedback.current
     SideEffect {
@@ -179,7 +185,7 @@ fun FloatingMascot(
             Box(Modifier.layoutId(ID_BODY).size(64.dp)) {
                 Canvas(Modifier.matchParentSize()) {
                     sim.frame // redraw on every simulated frame
-                    drawMascot(sim, art)
+                    drawMascot(sim, art, portrait)
                 }
                 Box(
                     Modifier
@@ -295,17 +301,17 @@ private suspend fun runMascotLoop(sim: MascotSim) {
 }
 
 /**
- * Gemmy in place (for the intro dialog and Settings): same drawing and behaviour, drawn [zoom]× bigger, stays put.
- * Tap, double-tap and poke it; it blinks, hops, waves and dozes off like the real one.
+ * Hina in place (for the intro dialog and Settings): same portrait and behaviour, drawn [zoom]× bigger, stays put.
+ * Tap, double-tap and poke it; it hops, waves and dozes off like the real one.
  */
 @Composable
-fun GemmyPreview(
+fun HinaPreview(
     modifier: Modifier = Modifier,
     zoom: Float = 1f
 ) {
     val density = LocalDensity.current.density
     val sim = remember(density) {
-        // A huge virtual area with Gemmy in the middle: it never hits an edge, and the first-frame greeting is skipped.
+        // A huge virtual area with Hina in the middle: it never hits an edge, and the first-frame greeting is skipped.
         MascotSim(density).apply {
             boundsW = 100_000f
             boundsH = 100_000f
@@ -314,11 +320,12 @@ fun GemmyPreview(
         }
     }
     val art = remember(density) { MascotArt(density) }
+    val portrait = ImageBitmap.imageResource(ai.hina.io.R.drawable.hina_mascot)
     val haptic = LocalHapticFeedback.current
     SideEffect { sim.hapticLight = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) } }
     LaunchedEffect(sim) { runMascotLoop(sim) }
 
-    // Taller than wide: the antenna and the ground shadow reach well past the 48dp body.
+    // Taller than wide: the portrait frame and the ground shadow reach past the 64dp box.
     Canvas(
         modifier
             .size(width = 72.dp * zoom, height = 96.dp * zoom)
@@ -334,7 +341,7 @@ fun GemmyPreview(
             }
     ) {
         sim.frame // redraw on every simulated frame
-        scale(zoom, pivot = center) { drawMascot(sim, art) }
+        scale(zoom, pivot = center) { drawMascot(sim, art, portrait) }
     }
 }
 
@@ -369,14 +376,14 @@ private fun MascotMenu(onDance: () -> Unit, onNap: () -> Unit, onHide: () -> Uni
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        MascotMenuChip("💃", "Dance", onDance)
-        MascotMenuChip("😴", "Nap", onNap)
-        MascotMenuChip("👋", "Hide", onHide)
+        MascotMenuChip("Dance", onDance)
+        MascotMenuChip("Nap", onNap)
+        MascotMenuChip("Hide", onHide)
     }
 }
 
 @Composable
-private fun MascotMenuChip(emoji: String, label: String, onClick: () -> Unit) {
+private fun MascotMenuChip(label: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(14.dp))
@@ -384,8 +391,6 @@ private fun MascotMenuChip(emoji: String, label: String, onClick: () -> Unit) {
             .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(emoji, fontSize = 14.sp)
-        Spacer(Modifier.width(4.dp))
         Text(label, color = MascotText, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
     }
 }
@@ -918,7 +923,7 @@ private class MascotSim(private val d: Float) {
         when (t) {
             Trick.WANDER -> pickWanderTarget()
             Trick.WAVE -> if (!speechVisible && Random.nextInt(2) == 0) say(HELLO_LINES.random(), 1.8f)
-            Trick.YAWN -> if (!speechVisible) say("*yawn* 🥱", 1.6f)
+            Trick.YAWN -> if (!speechVisible) say("*yawn*", 1.6f)
             else -> Unit
         }
     }
@@ -1042,7 +1047,7 @@ private class MascotSim(private val d: Float) {
             2 -> {
                 setMood(Mood.SURPRISED, 0.8f)
                 squash.vel -= 6f
-                say("Boop! 👉", 1.4f)
+                say("Boop!", 1.4f)
             }
             else -> {
                 setMood(Mood.LOVE, 1.4f)
@@ -1057,7 +1062,7 @@ private class MascotSim(private val d: Float) {
         menuOpen = false
         startTrick(Trick.SPIN)
         burst(P_SPARKLE, 8)
-        say("Wheee! ✨", 1.4f)
+        say("Wheee!", 1.4f)
         hapticLight()
     }
 
@@ -1128,7 +1133,7 @@ private class MascotSim(private val d: Float) {
         poke()
         touched()
         startTrick(Trick.DANCE)
-        say("Let's dance! 💃", 1.8f)
+        say("Let's dance!", 1.8f)
     }
 
     fun nap() {
@@ -1138,59 +1143,32 @@ private class MascotSim(private val d: Float) {
         sleeping = true
         nextFx = time + 0.4f
         lastInteraction = time
-        say("Nap time… 😴", 1.6f)
+        say("Nap time...", 1.6f)
     }
 
     fun hide() {
         poke()
         touched()
         startTrick(Trick.WAVE)
-        say("Bye bye! 👋", 1.2f)
+        say("Bye bye!", 1.2f)
         hideRequested = true
     }
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// Drawing (all shapes built once per density; nothing is allocated per frame except reusing [MascotArt.antennaPath])
+// Drawing: Hina's portrait in a rounded frame, plus the Canvas-drawn particles (hearts, sparkles, "z"s).
+// All particle shapes are built once per density; nothing is allocated per frame.
 // ---------------------------------------------------------------------------------------------------------------
 
 private class MascotArt(val d: Float) {
     val r = 24f * d
 
-    /** Gumdrop body, centered on (0, 0). */
-    val bodyPath = Path().apply {
-        moveTo(0f, -1.05f * r)
-        cubicTo(0.62f * r, -1.05f * r, 1.02f * r, -0.45f * r, 1.02f * r, 0.15f * r)
-        cubicTo(1.02f * r, 0.7f * r, 0.6f * r, 0.98f * r, 0f, 0.98f * r)
-        cubicTo(-0.6f * r, 0.98f * r, -1.02f * r, 0.7f * r, -1.02f * r, 0.15f * r)
-        cubicTo(-1.02f * r, -0.45f * r, -0.62f * r, -1.05f * r, 0f, -1.05f * r)
-        close()
-    }
-    val bodyBrush = Brush.verticalGradient(
-        colors = listOf(Color(0xFFC9BCFF), Color(0xFF8F7DFF), Color(0xFF5B57E0)),
-        startY = -r,
-        endY = r
-    )
-
-    val outline = MascotInk
-    val limb = Color(0xFF5B52D6)
-    val pupil = Color(0xFF1B1840)
-    val cheek = Color(0xFFFF8FB8)
-    val tongue = Color(0xFFFF7A9A)
-    val gem = Color(0xFFFFD45E)
     val heartColor = Color(0xFFFF5C8A)
     val sparkleColor = Color(0xFFFFE27A)
     val zColor = Color(0xFFA9B4FF)
 
-    val outlineStroke = Stroke(width = 2.2f * d, join = StrokeJoin.Round)
-    val thinStroke = Stroke(width = 1.3f * d, cap = StrokeCap.Round)
-    val featureStroke = Stroke(width = 2.2f * d, cap = StrokeCap.Round)
-
     // Unit-size shapes (about -1..1), drawn with a scale transform; their strokes are in unit space.
-    val unitOutline = Stroke(width = 0.16f, join = StrokeJoin.Round)
     val zStroke = Stroke(width = 0.32f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-
-    val antennaPath = Path()
 
     val heart = Path().apply {
         moveTo(0f, 0.9f)
@@ -1208,14 +1186,6 @@ private class MascotArt(val d: Float) {
         quadraticTo(-0.12f, -0.12f, 0f, -1f)
         close()
     }
-    val star = Path().apply {
-        for (i in 0 until 10) {
-            val rad = if (i % 2 == 0) 1f else 0.45f
-            val ang = -PI_F / 2f + i * PI_F / 5f
-            if (i == 0) moveTo(cos(ang) * rad, sin(ang) * rad) else lineTo(cos(ang) * rad, sin(ang) * rad)
-        }
-        close()
-    }
     val zPath = Path().apply {
         moveTo(-0.55f, -0.55f)
         lineTo(0.55f, -0.55f)
@@ -1224,7 +1194,7 @@ private class MascotArt(val d: Float) {
     }
 }
 
-private fun DrawScope.drawMascot(s: MascotSim, a: MascotArt) {
+private fun DrawScope.drawMascot(s: MascotSim, a: MascotArt, portrait: ImageBitmap) {
     val d = a.d
     val r = a.r
     val t = s.animT
@@ -1257,244 +1227,33 @@ private fun DrawScope.drawMascot(s: MascotSim, a: MascotArt) {
         rotate(s.tilt.v + s.spin, Offset.Zero)
         scale(sx, sy, Offset.Zero)
     }) {
-        drawLimbs(s, a, mood)
-        drawPath(a.bodyPath, a.bodyBrush)
-        if (mood == Mood.ANGRY) drawPath(a.bodyPath, Color(0xFFFF3B3B).copy(alpha = 0.28f))
-        drawOval(Color.White.copy(alpha = 0.16f), topLeft = Offset(-0.55f * r, 0.18f * r), size = Size(1.1f * r, 0.66f * r))
-        drawPath(a.bodyPath, a.outline, style = a.outlineStroke)
-        drawOval(Color.White.copy(alpha = 0.6f), topLeft = Offset(-0.68f * r, -0.82f * r), size = Size(0.36f * r, 0.2f * r))
-        drawAntenna(s, a, mood)
-        drawFace(s, a, mood)
+        // Hina's portrait in a rounded frame (3:4, like the body crop): 46dp wide, 61dp tall,
+        // inside the 64dp box. A soft white ring picks it out against any chat behind it.
+        // Asleep, the portrait dims a little; the "z" particles still rise above it.
+        val frameW = 1.92f * r
+        val frameH = frameW * 4f / 3f
+        val topLeft = Offset(-frameW / 2f, -frameH / 2f)
+        val frameSize = Size(frameW, frameH)
+        val corner = CornerRadius(frameW * 0.28f, frameW * 0.28f)
+        clipPath(Path().apply { addRoundRect(RoundRect(Rect(topLeft, frameSize), corner)) }) {
+            drawImage(
+                image = portrait,
+                srcOffset = IntOffset.Zero,
+                srcSize = IntSize(portrait.width, portrait.height),
+                dstOffset = IntOffset(topLeft.x.roundToInt(), topLeft.y.roundToInt()),
+                dstSize = IntSize(frameW.roundToInt(), frameH.roundToInt()),
+                alpha = if (sleeping) 0.8f else 1f
+            )
+        }
+        drawRoundRect(
+            color = Color.White.copy(alpha = 0.75f),
+            topLeft = topLeft, size = frameSize, cornerRadius = corner,
+            style = Stroke(width = 2f * d)
+        )
     }
 
     // The canvas center is where the body is (overlay: the 64dp box around x/y; preview: a zoomed canvas).
     drawParticles(s, a, s.x - size.width / 2f, s.y - size.height / 2f)
-}
-
-private fun DrawScope.drawLimbs(s: MascotSim, a: MascotArt, mood: Mood) {
-    val r = a.r
-    val t = s.animT
-
-    // Feet: paddle while wandering, dangle and swing while held.
-    for (side in 0..1) {
-        val sgn = if (side == 0) -1f else 1f
-        val lift = if (s.trick == Trick.WANDER) max(0f, sin(t * 11f + side * PI_F)) * 0.14f * r else 0f
-        val dangle = if (s.held) 0.12f * r else 0f
-        val swing = s.legs.v + if (s.held) sin(t * 9f + side * PI_F) * 6f else 0f
-        withTransform({
-            translate(sgn * 0.42f * r, 0.84f * r + dangle - lift)
-            rotate(swing, Offset(0f, -0.35f * r))
-        }) {
-            drawOval(a.limb, topLeft = Offset(-0.21f * r, -0.12f * r), size = Size(0.42f * r, 0.3f * r))
-            drawOval(a.outline, topLeft = Offset(-0.21f * r, -0.12f * r), size = Size(0.42f * r, 0.3f * r), style = a.thinStroke)
-        }
-    }
-
-    // Arms: drawn pointing right, mirrored for the left one. Angle > 0 = down, < 0 = up.
-    for (side in 0..1) {
-        val sgn = if (side == 0) -1f else 1f
-        var ang = 28f + sin(t * 2.1f + side) * 4f
-        when {
-            s.held -> ang = -55f + sin(t * 16f + side * PI_F) * 14f
-            s.trick == Trick.DANCE -> ang = -60f + sin(t * 9f + side * PI_F) * 45f
-            mood == Mood.ANGRY -> ang = 60f
-            mood == Mood.HAPPY || mood == Mood.LOVE -> ang = -20f + sin(t * 10f + side * PI_F) * 10f
-        }
-        if (side == 1 && s.wave > 0f) ang += ((-125f + sin(t * 15f) * 22f) - ang) * s.wave
-        withTransform({
-            translate(sgn * 0.88f * r, 0.12f * r)
-            scale(sgn, 1f, Offset.Zero)
-            rotate(ang, Offset.Zero)
-        }) {
-            drawOval(a.limb, topLeft = Offset(-0.06f * r, -0.13f * r), size = Size(0.46f * r, 0.26f * r))
-            drawOval(a.outline, topLeft = Offset(-0.06f * r, -0.13f * r), size = Size(0.46f * r, 0.26f * r), style = a.thinStroke)
-        }
-    }
-}
-
-private fun DrawScope.drawAntenna(s: MascotSim, a: MascotArt, mood: Mood) {
-    val r = a.r
-    val t = s.animT
-    val baseY = -1.02f * r
-    val len = 0.62f * r
-    val ang = s.antenna.v * (PI_F / 180f)
-    val tipX = sin(ang) * len
-    val tipY = baseY - cos(ang) * len
-    a.antennaPath.reset()
-    a.antennaPath.moveTo(0f, baseY)
-    a.antennaPath.quadraticTo(sin(ang * 0.4f) * len * 0.5f, baseY - len * 0.55f, tipX, tipY)
-    drawPath(a.antennaPath, a.outline, style = a.featureStroke)
-
-    val pulse = when (mood) {
-        Mood.THINKING -> 0.55f + 0.45f * sin(t * 7f)
-        Mood.SLEEP -> 0.15f
-        else -> 0.35f + 0.1f * sin(t * 2f)
-    }
-    drawCircle(a.gem.copy(alpha = 0.35f * pulse), radius = 0.42f * r * (0.8f + pulse * 0.4f), center = Offset(tipX, tipY))
-    withTransform({
-        translate(tipX, tipY)
-        rotate(t * 40f, Offset.Zero)
-        scale(0.24f * r, 0.24f * r, Offset.Zero)
-    }) {
-        drawPath(a.star, a.gem)
-        drawPath(a.star, a.outline, style = a.unitOutline)
-    }
-
-    if (mood == Mood.THINKING) {
-        for (i in 0..2) {
-            val o = t * 3f + i * 2.094f
-            drawCircle(Color.White, radius = 0.07f * r, center = Offset(tipX + cos(o) * 0.5f * r, tipY + sin(o) * 0.22f * r))
-        }
-    }
-}
-
-private fun DrawScope.drawFace(s: MascotSim, a: MascotArt, mood: Mood) {
-    val d = a.d
-    val r = a.r
-    val t = s.animT
-    val eyeY = -0.12f * r
-    val eyeDX = 0.36f * r
-
-    val blush = when (mood) {
-        Mood.HAPPY, Mood.LOVE -> 0.75f
-        Mood.ANGRY -> 0f
-        else -> 0.45f
-    }
-    if (blush > 0f) {
-        for (side in 0..1) {
-            val sgn = if (side == 0) -1f else 1f
-            drawOval(a.cheek.copy(alpha = blush), topLeft = Offset(sgn * 0.6f * r - 0.15f * r, 0.11f * r), size = Size(0.3f * r, 0.18f * r))
-        }
-    }
-
-    for (side in 0..1) {
-        val sgn = if (side == 0) -1f else 1f
-        val ex = sgn * eyeDX
-        when (mood) {
-            Mood.HAPPY -> drawArc(
-                a.pupil, startAngle = 180f, sweepAngle = 180f, useCenter = false,
-                topLeft = Offset(ex - 0.17f * r, eyeY - 0.08f * r), size = Size(0.34f * r, 0.3f * r), style = a.featureStroke
-            )
-            Mood.LOVE -> {
-                val hs = 0.2f * r * (1f + 0.12f * sin(t * 10f))
-                withTransform({
-                    translate(ex, eyeY)
-                    scale(hs, hs, Offset.Zero)
-                }) {
-                    drawPath(a.heart, a.heartColor)
-                    drawPath(a.heart, a.outline, style = a.unitOutline)
-                }
-            }
-            Mood.SLEEP -> drawArc(
-                a.pupil, startAngle = 0f, sweepAngle = 180f, useCenter = false,
-                topLeft = Offset(ex - 0.16f * r, eyeY - 0.12f * r), size = Size(0.32f * r, 0.22f * r), style = a.featureStroke
-            )
-            Mood.DIZZY -> {
-                val rot = t * 600f
-                drawCircle(Color.White, radius = 0.24f * r, center = Offset(ex, eyeY))
-                drawArc(
-                    a.pupil, startAngle = rot, sweepAngle = 280f, useCenter = false,
-                    topLeft = Offset(ex - 0.19f * r, eyeY - 0.19f * r), size = Size(0.38f * r, 0.38f * r), style = a.thinStroke
-                )
-                drawArc(
-                    a.pupil, startAngle = rot + 180f, sweepAngle = 260f, useCenter = false,
-                    topLeft = Offset(ex - 0.09f * r, eyeY - 0.09f * r), size = Size(0.18f * r, 0.18f * r), style = a.thinStroke
-                )
-            }
-            else -> {
-                val big = mood == Mood.SURPRISED
-                val ew = if (big) 0.27f * r else 0.23f * r
-                val eh0 = if (big) 0.3f * r else 0.27f * r
-                val open = (1f - s.blink) * (1f - s.yawn * 0.6f)
-                if (open < 0.18f) {
-                    drawLine(a.pupil, Offset(ex - ew * 0.8f, eyeY), Offset(ex + ew * 0.8f, eyeY), strokeWidth = 2.2f * d, cap = StrokeCap.Round)
-                } else {
-                    val eh = eh0 * open
-                    drawOval(Color.White, topLeft = Offset(ex - ew, eyeY - eh), size = Size(2f * ew, 2f * eh))
-                    val pr = min(
-                        when {
-                            big -> 0.1f * r
-                            mood == Mood.ANGRY -> 0.12f * r
-                            else -> 0.15f * r
-                        },
-                        eh * 0.9f
-                    )
-                    val px = ex + s.lookX * (ew - pr) * 0.7f
-                    val py = eyeY + s.lookY * (eh - pr) * 0.6f
-                    drawCircle(a.pupil, radius = pr, center = Offset(px, py))
-                    drawCircle(Color.White, radius = pr * 0.38f, center = Offset(px - pr * 0.35f, py - pr * 0.4f))
-                    drawOval(a.outline, topLeft = Offset(ex - ew, eyeY - eh), size = Size(2f * ew, 2f * eh), style = a.thinStroke)
-                }
-                if (mood == Mood.ANGRY) {
-                    drawLine(
-                        a.outline, Offset(ex + sgn * 0.22f * r, eyeY - 0.4f * r), Offset(ex - sgn * 0.18f * r, eyeY - 0.26f * r),
-                        strokeWidth = 2.4f * d, cap = StrokeCap.Round
-                    )
-                } else if (mood == Mood.THINKING && side == 1) {
-                    drawLine(
-                        a.outline, Offset(ex - 0.16f * r, eyeY - 0.44f * r), Offset(ex + 0.18f * r, eyeY - 0.4f * r),
-                        strokeWidth = 2.2f * d, cap = StrokeCap.Round
-                    )
-                }
-            }
-        }
-    }
-
-    // Mouth
-    val my = 0.3f * r
-    when {
-        s.yawn > 0.05f -> {
-            val h = 0.12f * r + 0.28f * r * s.yawn
-            drawOval(a.pupil, topLeft = Offset(-0.13f * r, my - h * 0.4f), size = Size(0.26f * r, h))
-        }
-        mood == Mood.HAPPY || mood == Mood.LOVE -> {
-            drawArc(a.pupil, startAngle = 0f, sweepAngle = 180f, useCenter = true, topLeft = Offset(-0.22f * r, my - 0.2f * r), size = Size(0.44f * r, 0.4f * r))
-            drawOval(a.tongue, topLeft = Offset(-0.1f * r, my + 0.07f * r), size = Size(0.2f * r, 0.1f * r))
-        }
-        mood == Mood.SURPRISED -> drawOval(a.pupil, topLeft = Offset(-0.08f * r, my - 0.06f * r), size = Size(0.16f * r, 0.2f * r))
-        mood == Mood.SLEEP -> {
-            val h = 0.07f * r + 0.05f * r * (0.5f + 0.5f * sin(t * 1.3f))
-            drawOval(a.pupil, topLeft = Offset(-0.06f * r, my), size = Size(0.12f * r, h))
-        }
-        mood == Mood.DIZZY -> {
-            drawArc(a.pupil, startAngle = 180f, sweepAngle = 180f, useCenter = false, topLeft = Offset(-0.2f * r, my - 0.06f * r), size = Size(0.2f * r, 0.12f * r), style = a.featureStroke)
-            drawArc(a.pupil, startAngle = 0f, sweepAngle = 180f, useCenter = false, topLeft = Offset(0f, my - 0.06f * r), size = Size(0.2f * r, 0.12f * r), style = a.featureStroke)
-        }
-        mood == Mood.ANGRY -> drawArc(
-            a.pupil, startAngle = 200f, sweepAngle = 140f, useCenter = false,
-            topLeft = Offset(-0.18f * r, my), size = Size(0.36f * r, 0.24f * r), style = a.featureStroke
-        )
-        mood == Mood.THINKING -> drawLine(a.pupil, Offset(-0.06f * r, my + 0.04f * r), Offset(0.14f * r, my), strokeWidth = 2.2f * d, cap = StrokeCap.Round)
-        else -> drawArc(
-            a.pupil, startAngle = 20f, sweepAngle = 140f, useCenter = false,
-            topLeft = Offset(-0.2f * r, my - 0.14f * r), size = Size(0.4f * r, 0.28f * r), style = a.featureStroke
-        )
-    }
-
-    // Dizzy: little stars circling the head.
-    if (mood == Mood.DIZZY) {
-        for (i in 0..2) {
-            val o = t * 4f + i * 2.094f
-            withTransform({
-                translate(cos(o) * 0.95f * r, -0.95f * r + sin(o) * 0.22f * r)
-                scale(0.13f * r, 0.13f * r, Offset.Zero)
-            }) {
-                drawPath(a.star, a.gem)
-                drawPath(a.star, a.outline, style = a.unitOutline)
-            }
-        }
-    }
-
-    // Asleep: a small static "z" by the head, so the still (resting) pose still reads as sleeping between snores.
-    if (mood == Mood.SLEEP) {
-        withTransform({
-            translate(0.95f * r, -1.2f * r)
-            rotate(-12f, Offset.Zero)
-            scale(0.16f * r, 0.16f * r, Offset.Zero)
-        }) {
-            drawPath(a.zPath, a.zColor, style = a.zStroke)
-        }
-    }
 }
 
 /** [ox]/[oy]: where this canvas' origin sits in overlay coordinates (particles live in overlay coordinates). */

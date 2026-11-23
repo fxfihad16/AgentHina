@@ -46,10 +46,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -623,9 +626,14 @@ fun ChatInputBar(
                 modifier = Modifier.padding(bottom = 6.dp)
             )
 
-            // Claude-style unified rounded input card
+            // Claude-style unified rounded input card (Liquid Glass: frosted card + a soft colored shadow)
             Surface(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        8.dp, RoundedCornerShape(24.dp), clip = false,
+                        spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                    ),
                 shape = RoundedCornerShape(24.dp),
                 color = ai.hina.io.theme.AppColors.card,
                 border = BorderStroke(
@@ -1177,10 +1185,14 @@ fun ChatInputBar(
                                     onOpenModelSelector()
                                 },
                                 shape = RoundedCornerShape(18.dp),
-                                color = MaterialTheme.colorScheme.background,
+                                color = MaterialTheme.colorScheme.surface,
                                 border = BorderStroke(
                                     1.dp,
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                ),
+                                modifier = Modifier.shadow(
+                                    4.dp, RoundedCornerShape(18.dp), clip = false,
+                                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                                 )
                             ) {
                                 Row(
@@ -1198,7 +1210,7 @@ fun ChatInputBar(
                                         text = selectedModel.displayName,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         modifier = Modifier.weight(1f, fill = false)
@@ -1314,6 +1326,13 @@ fun ChatInputBar(
                             // Send, so the arrow (textSecondary) stays visible; it used to be textSecondary on textSecondary
                             val sendBlocked = !isAuth || !isOnline || attachmentsBusy
                             val sendBtnColor = if (sendBlocked) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f) else if (isBackgroundActive) ai.hina.io.theme.AppColors.warning else ClaudeTerracotta
+                            // Liquid Glass: the send button carries the theme's primary as a soft gradient
+                            // (light → dark, #8B7FF5 → #6D5DF2 on the default theme) with a colored shadow.
+                            // Blocked / background-active keep their flat functional colors.
+                            val primary = MaterialTheme.colorScheme.primary
+                            val sendGradient = if (sendBlocked || isBackgroundActive) null else Brush.linearGradient(
+                                listOf(lerp(primary, Color.White, 0.12f), lerp(primary, Color.Black, 0.10f))
+                            )
                             Surface(
                                 onClick = {
                                     val trimmed = textFieldState.text.toString().trim()
@@ -1336,8 +1355,11 @@ fun ChatInputBar(
                                         textFieldState.clearText()
                                 },
                                 shape = CircleShape,
-                                color = sendBtnColor,
-                                modifier = Modifier.size(36.dp)
+                                color = if (sendGradient == null) sendBtnColor else Color.Transparent,
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .then(if (sendGradient != null) Modifier.shadow(8.dp, CircleShape, clip = false, spotColor = primary.copy(alpha = 0.45f)) else Modifier)
+                                    .then(if (sendGradient != null) Modifier.background(sendGradient, CircleShape) else Modifier)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(

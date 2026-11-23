@@ -327,7 +327,7 @@ fun ChatScreen(
     val isFloatingNetworkInspectorEnabled by viewModel.isFloatingNetworkInspectorEnabled.collectAsState()
     var showNetworkInspectorDialog by remember { mutableStateOf(false) }
     val hasSeenTerminalLauncherOnboarding by viewModel.authPreferences.hasSeenTerminalLauncherOnboarding.collectAsState(initial = true)
-    val hasSeenGemmyIntro by viewModel.authPreferences.hasSeenGemmyIntro.collectAsState(initial = true)
+    val hasSeenHinaIntro by viewModel.authPreferences.hasSeenHinaIntro.collectAsState(initial = true)
     val isTranscribingAudio by viewModel.isTranscribingAudio.collectAsState()
     val pendingLoginUrl by viewModel.pendingLoginUrl.collectAsState()
     val agyLoginIssue by viewModel.agyLoginIssue.collectAsState()
@@ -3703,22 +3703,22 @@ fun ChatScreen(
         )
     }
 
-    // "Meet Gemmy": once the whole first-launch setup is done and the user is in chat, ask once whether to show the
-    // floating buddy (on by default, can be turned off right there). Gemmy itself only appears after this is answered.
-    val gemmyIntroDue = !hasSeenGemmyIntro && hasChosenAgents && !agentStepPending && !launcherStepPending &&
+    // "Meet Hina": once the whole first-launch setup is done and the user is in chat, ask once whether to show the
+    // floating buddy (on by default, can be turned off right there). Hina itself only appears after this is answered.
+    val hinaIntroDue = !hasSeenHinaIntro && hasChosenAgents && !agentStepPending && !launcherStepPending &&
         !isApplyingAgents && !isInFloatingWindow
-    var showGemmyIntro by remember { mutableStateOf(false) }
-    LaunchedEffect(gemmyIntroDue) {
-        if (gemmyIntroDue) delay(700) // let the chat settle after the setup steps
-        showGemmyIntro = gemmyIntroDue
+    var showHinaIntro by remember { mutableStateOf(false) }
+    LaunchedEffect(hinaIntroDue) {
+        if (hinaIntroDue) delay(700) // let the chat settle after the setup steps
+        showHinaIntro = hinaIntroDue
     }
-    if (showGemmyIntro && gemmyIntroDue) {
-        ai.hina.io.ui.onboarding.GemmyIntroDialog(
+    if (showHinaIntro && hinaIntroDue) {
+        ai.hina.io.ui.onboarding.HinaIntroDialog(
             onConfirm = { enabled ->
-                showGemmyIntro = false
+                showHinaIntro = false
                 scope.launch {
-                    viewModel.authPreferences.setGemmyEnabled(enabled)
-                    viewModel.authPreferences.setHasSeenGemmyIntro(true)
+                    viewModel.authPreferences.setHinaEnabled(enabled)
+                    viewModel.authPreferences.setHasSeenHinaIntro(true)
                 }
             }
         )

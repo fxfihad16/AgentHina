@@ -307,56 +307,27 @@ object ThemeTokens {
 
 /** The themes that come with the app. */
 object BuiltInThemes {
-    const val LIGHT_DEFAULT = "hina_light"
+    const val LIGHT_DEFAULT = "liquid_glass"
     const val DARK_DEFAULT = "midnight_aurora"
-    /** The original Agent Hina dark look (no longer the default; the id stays so a saved choice still finds it). */
-    private const val HINA_DARK = "hina_dark"
 
     /** How many themes at the top of each side's list are marked as recommended (the first is the default). */
     const val RECOMMENDED_COUNT = 3
 
-    private val oneDarkSyntax = listOf(0xFFC678DD, 0xFFE5C07B, 0xFF98C379, 0xFFD19A66, 0xFF7F848E, 0xFF61AFEF, 0xFFE5C07B, 0xFFABB2BF)
     private val syntaxKeys = listOf("syntax_keyword", "syntax_type", "syntax_string", "syntax_number", "syntax_comment", "syntax_function", "syntax_annotation", "syntax_punctuation")
 
-    /** The original Agent Hina look, exactly as before themes existed (other Material slots stay at Material's defaults). */
-    private fun hina(dark: Boolean) = AppTheme(
-        id = if (dark) HINA_DARK else LIGHT_DEFAULT,
-        name = if (dark) "Amber Night" else "Porcelain",
-        dark = dark, builtIn = true,
-        about = if (dark) "Agent Hina's original warm dark look with the amber accent" else "Agent Hina's original clean light look with the amber accent",
-        colors = buildMap {
-            put("primary", 0xFFD97706); put("secondary", 0xFFB45309); put("on_primary", 0xFFFFFFFF)
-            if (dark) {
-                put("background", 0xFF181816); put("surface", 0xFF181816); put("on_background", 0xFFF5F5F4); put("on_surface", 0xFFF5F5F4)
-                put("surface_variant", 0xFF32312D)
-                put("card", 0xFF232320); put("text_secondary", 0xFFA8A29E); put("user_bubble", 0xFF32312D); put("thinking_bg", 0xFF282724)
-            } else {
-                put("background", 0xFFF9F9FB); put("surface", 0xFFF9F9FB); put("on_background", 0xFF1C1917); put("on_surface", 0xFF1C1917)
-                put("surface_variant", 0xFFE8EAED)
-                put("card", 0xFFFFFFFF); put("text_secondary", 0xFF78716C); put("user_bubble", 0xFFE8EAED); put("thinking_bg", 0xFFF1F3F5)
-            }
-            put("code_bg", 0xFF1E1E1C); put("code_text", 0xFFF5F5F4)
-            put("success", 0xFF16A34A); put("warning", 0xFFD97706); put("danger", 0xFFDC2626); put("info", 0xFF3B82F6); put("accent_alt", 0xFF8B5CF6)
-            syntaxKeys.zip(oneDarkSyntax).forEach { (k, v) -> put(k, v) }
-            put("syntax_control", 0xFFC678DD); put("syntax_tag", 0xFFE06C75); put("syntax_attribute", 0xFFD19A66)
-            if (dark) {
-                put("border", 0xFF34332F); put("fill", 0xFF2C2C2A)
-                put("success_container", 0xFF143324); put("warning_container", 0xFF451A03); put("danger_container", 0xFF381919); put("info_container", 0xFF1E2A44)
-            } else {
-                put("border", 0xFFE5E7EB); put("fill", 0xFFF3F4F6)
-                put("success_container", 0xFFE8F5E9); put("warning_container", 0xFFFFF3E0); put("danger_container", 0xFFFEF2F2); put("info_container", 0xFFE3F2FD)
-            }
-            put("accent_indigo", 0xFF6366F1); put("accent_teal", 0xFF00ACC1); put("accent_pink", 0xFFEC4899)
-            // the IDE's VS Code-style editor and the black terminal, as before
-            put("editor_bg", 0xFF1E1E1E); put("editor_panel", 0xFF252526); put("editor_text", 0xFFD4D4D4); put("editor_muted", 0xFF888888)
-            put("editor_border", 0xFF3C3C3C); put("editor_selection", 0xFF264F78); put("editor_line", 0xFF2D2D2D)
-            put("editor_added_bg", 0xFF1B4728); put("editor_added_text", 0xFFB9F6CA); put("editor_removed_bg", 0xFF4B1E1E); put("editor_removed_text", 0xFFFFCDD2)
-            put("editor_info_bg", 0xFF1E293B); put("editor_info_text", 0xFF90CAF9)
-            put("terminal_bg", 0xFF000000); put("terminal_fg", 0xFFFFFFFF); put("terminal_cursor", 0xFFFFFFFF)
-            listOf(0xFF000000, 0xFFCD0000, 0xFF00CD00, 0xFFCDCD00, 0xFF6495ED, 0xFFCD00CD, 0xFF00CDCD, 0xFFE5E5E5,
-                0xFF7F7F7F, 0xFFFF0000, 0xFF00FF00, 0xFFFFFF00, 0xFF5C5CFF, 0xFFFF00FF, 0xFF00FFFF, 0xFFFFFFFF).forEachIndexed { i, v -> put("ansi_$i", v) }
-        }
-    )
+    /**
+     * Liquid Glass: the default light theme. Lavender-white background, frosted translucent surfaces, primary
+     * #7C6CF0 — the values of the Liquid Glass mockup (design/trending/chat-glass). White text on primary is set
+     * by hand: the derive rule would pick black, but the mockup's buttons and bubbles carry white text.
+     */
+    private fun liquidGlass(): AppTheme {
+        val base = seeded("liquid_glass", "Liquid Glass",
+            "Frosted lavender glass: the default Agent Hina look", false,
+            0xFFF2F0FF, 0x9EFFFFFF, 0x9EFFFFFF, 0xFFE9E5FF, 0xFF1E1B2E, 0xFF6B6580,
+            0xFF7C6CF0, 0xFFA78BFA, 0xFF3DDC84, 0xFF15803D, 0xFFB45309, 0xFFDC2626, 0xFF2563EB,
+            0xFF1B1730, listOf(0xFFD8B4FE, 0xFFFDE68A, 0xFFA7F3D0, 0xFFFDBA74, 0xFF7E7396, 0xFF93C5FD, 0xFFFDE68A, 0xFFE4DDF5))
+        return base.copy(colors = base.colors + ("on_primary" to 0xFFFFFFFF))
+    }
 
     /** The default dark theme: every color set by hand (first made as a custom theme in the app, then exported). */
     private fun midnightAurora() = AppTheme(
@@ -409,7 +380,7 @@ object BuiltInThemes {
     val all: List<AppTheme> by lazy {
         listOf(
             // light, best first: the first is the default and the first RECOMMENDED_COUNT are marked as recommended
-            hina(false),
+            liquidGlass(),
             seeded("lavender", "Lavender", "Soft lilac with a violet accent", false,
                 0xFFF8F6FD, 0xFFF8F6FD, 0xFFFFFFFF, 0xFFECE7F8, 0xFF241B3A, 0xFF655B7F,
                 0xFF7C3AED, 0xFFA855F7, 0xFFDB2777, 0xFF15803D, 0xFFB45309, 0xFFDC2626, 0xFF2563EB,
@@ -456,7 +427,6 @@ object BuiltInThemes {
                 0xFF000000, 0xFF000000, 0xFF0D0D0D, 0xFF1F1F1F, 0xFFFFFFFF, 0xFFD4D4D4,
                 0xFFFFD60A, 0xFF00E5FF, 0xFFFF6EFF, 0xFF00E676, 0xFFFFC400, 0xFFFF5252, 0xFF40C4FF,
                 0xFF000000, listOf(0xFFFF6EFF, 0xFFFFD60A, 0xFF00E676, 0xFFFF9E40, 0xFFBDBDBD, 0xFF40C4FF, 0xFFFFD60A, 0xFFFFFFFF)),
-            hina(true),
             seeded("mocha", "Mocha", "Cozy pastel dark: lavender, pink and sky on deep cocoa-blue", true,
                 0xFF1E1E2E, 0xFF1E1E2E, 0xFF252536, 0xFF313244, 0xFFCDD6F4, 0xFFA6ADC8,
                 0xFFCBA6F7, 0xFFF5C2E7, 0xFF89B4FA, 0xFFA6E3A1, 0xFFF9E2AF, 0xFFF38BA8, 0xFF89DCEB,

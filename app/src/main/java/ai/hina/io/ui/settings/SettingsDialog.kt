@@ -87,7 +87,7 @@ import ai.hina.io.data.daemon.IdeApiClient
 enum class SettingsSection(val title: String, val subtitle: String) {
     MAIN("Settings & Preferences", "Configure your Agent Hina experience"),
     THEMES("Themes", "Light and dark mode, and the theme gallery"),
-    APPEARANCE("Appearance", "Chat text size, agent steps, message stats, header icons, the app switcher and Gemmy"),
+    APPEARANCE("Appearance", "Chat text size, agent steps, message stats, header icons, the app switcher and Hina"),
     STEM_RENDERING("STEM & diagrams", "Chemistry, graphs, geometry, simulations, circuits and offline Mermaid in chats"),
     SERVERS("Where agents run", "This phone (Agent Hina or Ubuntu chroot) or your server, and how the app reaches it"),
     CONNECT_PC("Connect to PC", "Use the agents on your PC (Agent Hina in VS Code) from this phone"),
@@ -2026,11 +2026,11 @@ private fun AppearanceSubScreen(
             }
         }
 
-        // Gemmy: the floating cartoon buddy (on by default; first offered by the one-time "Meet Gemmy" dialog)
-        val gemmyContext = LocalContext.current
-        val gemmyPrefs = remember(gemmyContext) { ai.hina.io.data.preferences.AuthPreferences(gemmyContext) }
-        val isGemmyEnabled by gemmyPrefs.isGemmyEnabled.collectAsState(initial = true)
-        val gemmyScope = rememberCoroutineScope()
+        // Hina: the floating portrait buddy (on by default; first offered by the one-time "Meet Hina" dialog)
+        val hinaContext = LocalContext.current
+        val hinaPrefs = remember(hinaContext) { ai.hina.io.data.preferences.AuthPreferences(hinaContext) }
+        val isHinaEnabled by hinaPrefs.isHinaEnabled.collectAsState(initial = true)
+        val hinaScope = rememberCoroutineScope()
         Surface(
             shape = RoundedCornerShape(14.dp),
             color = cardBg,
@@ -2043,31 +2043,31 @@ private fun AppearanceSubScreen(
                     .padding(start = 8.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ai.hina.io.ui.components.GemmyPreview(
+                ai.hina.io.ui.components.HinaPreview(
                     zoom = 0.85f,
-                    modifier = Modifier.alpha(if (isGemmyEnabled) 1f else 0.4f)
+                    modifier = Modifier.alpha(if (isHinaEnabled) 1f else 0.4f)
                 )
                 Column(modifier = Modifier.weight(1f).padding(start = 4.dp, end = 12.dp)) {
                     Text(
-                        text = "Gemmy",
+                        text = "Hina",
                         fontSize = 13.5.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "A floating cartoon buddy across the app: drag or fling it, tap, double-tap or long-press it. " +
-                            "It reacts while the agent works and rests (almost no battery) when left alone.",
+                        text = "Hina floats across the app: drag or fling her, tap, double-tap or long-press her. " +
+                            "She reacts while the agent works and rests (almost no battery) when left alone.",
                         fontSize = 11.5.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                 }
                 Switch(
-                    checked = isGemmyEnabled,
+                    checked = isHinaEnabled,
                     onCheckedChange = { enable ->
-                        gemmyScope.launch {
-                            gemmyPrefs.setGemmyEnabled(enable)
-                            gemmyPrefs.setHasSeenGemmyIntro(true) // decided here: no need for the intro dialog anymore
+                        hinaScope.launch {
+                            hinaPrefs.setHinaEnabled(enable)
+                            hinaPrefs.setHasSeenHinaIntro(true) // decided here: no need for the intro dialog anymore
                         }
                     },
                     colors = SwitchDefaults.colors(

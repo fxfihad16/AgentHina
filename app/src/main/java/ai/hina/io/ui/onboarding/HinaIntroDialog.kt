@@ -1,7 +1,6 @@
 package ai.hina.io.ui.onboarding
 
-import ai.hina.io.theme.ClaudeTerracotta
-import ai.hina.io.ui.components.GemmyPreview
+import ai.hina.io.ui.components.HinaPreview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,12 +40,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 /**
- * One-time "Meet Gemmy" dialog, shown in chat once the first-launch setup is done. The switch starts on (Gemmy is on
+ * One-time "Meet Hina" dialog, shown in chat once the first-launch setup is done. The switch starts on (Hina is on
  * by default), so the user sees it exists and can turn it off right here; it is never asked again (Settings →
  * Appearance has the switch). Back counts as confirming the current choice; tapping outside does nothing.
  */
 @Composable
-fun GemmyIntroDialog(onConfirm: (enabled: Boolean) -> Unit) {
+fun HinaIntroDialog(onConfirm: (enabled: Boolean) -> Unit) {
     var enabled by remember { mutableStateOf(true) }
 
     Dialog(
@@ -65,7 +64,7 @@ fun GemmyIntroDialog(onConfirm: (enabled: Boolean) -> Unit) {
                     .padding(horizontal = 22.dp, vertical = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Live, tappable Gemmy (dimmed while the switch is off) on a soft glow
+                // Live, tappable Hina (dimmed while the switch is off) on a soft glow
                 Box(contentAlignment = Alignment.Center) {
                     Box(
                         modifier = Modifier
@@ -75,28 +74,28 @@ fun GemmyIntroDialog(onConfirm: (enabled: Boolean) -> Unit) {
                                 CircleShape
                             )
                     )
-                    GemmyPreview(
+                    HinaPreview(
                         zoom = 1.5f,
                         modifier = Modifier.alpha(if (enabled) 1f else 0.4f)
                     )
                 }
                 Text(
-                    text = "psst… tap it!",
+                    text = "psst… tap her!",
                     fontSize = 11.sp,
-                    color = ClaudeTerracotta.copy(alpha = 0.85f)
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
-                    text = "Meet Gemmy 👋",
+                    text = "Meet Hina",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "A little buddy that floats over the app. Drag it around or fling it, tap or double-tap it, " +
-                        "long-press it for its menu. It thinks while your agent works and cheers when it's done.",
+                    text = "Hina floats over the app as your little buddy. Drag her around or fling her, tap or double-tap her, " +
+                        "long-press her for the menu. She thinks while your agent works and cheers when it's done.",
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
                     textAlign = TextAlign.Center,
@@ -116,13 +115,13 @@ fun GemmyIntroDialog(onConfirm: (enabled: Boolean) -> Unit) {
                     ) {
                         Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
                             Text(
-                                text = "Show Gemmy",
+                                text = "Show Hina",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = if (enabled) "It will float on your screens" else "It stays hidden",
+                                text = if (enabled) "She will float on your screens" else "She stays hidden",
                                 fontSize = 11.5.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
@@ -132,7 +131,7 @@ fun GemmyIntroDialog(onConfirm: (enabled: Boolean) -> Unit) {
                             onCheckedChange = { enabled = it },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
-                                checkedTrackColor = ClaudeTerracotta
+                                checkedTrackColor = MaterialTheme.colorScheme.primary
                             )
                         )
                     }
@@ -143,10 +142,10 @@ fun GemmyIntroDialog(onConfirm: (enabled: Boolean) -> Unit) {
                     onClick = { onConfirm(enabled) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = ClaudeTerracotta, contentColor = Color.White)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
                 ) {
                     Text(
-                        text = if (enabled) "Let's go!" else "Continue without Gemmy",
+                        text = if (enabled) "Let's go!" else "Continue without Hina",
                         fontWeight = FontWeight.SemiBold
                     )
                 }
