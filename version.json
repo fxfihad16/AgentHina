@@ -1,10 +1,11 @@
 {
   "changelog": [
     "Agent Hina v1.0.0 — first release",
-    "Liquid Glass theme, Hina mascot, and your own instruction pack (personal build)"
+    "Liquid Glass theme, Hina mascot, and your own instruction pack (personal build)",
+    "v1.0.1 — fixes the launch crash: the splash wordmark's vector paths were malformed, so the app stopped as soon as it opened"
   ],
-  "is_critical": false,
+  "is_critical": true,
   "min_supported_version_code": 1,
-  "version_code": 1,
-  "version_name": "1.0.0"
+  "version_code": 2,
+  "version_name": "1.0.1"
 }
