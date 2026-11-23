@@ -70,3 +70,8 @@ scripts/render_bundle/out/
 scripts/render_bundle/.work/
 # IDE bridge copy of /version.json (copied by the Gradle build and scripts/agy_ide_bridge_builder.sh)
 agy_ide_bridge/pkg/buildinfo/version.json
+
+# Personal flavor assets: Fihad's own instruction pack (hina-default-instructions.md) and the short
+# GlobalContext entry (hina-global-context.md) live ONLY in the private repo (AgentHina-personal).
+# This ignore is what keeps the pack from ever being committed to the public repo by accident.
+app/src/personal/assets/

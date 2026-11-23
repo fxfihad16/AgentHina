@@ -76,7 +76,7 @@ fun TerminalLauncherOnboardingDialog(
     step: Int = 1,
     total: Int = 1,
     initialEnabled: Boolean = false,
-    initialStyle: String = TerminalLauncherManager.STYLE_ANTITERM,
+    initialStyle: String = TerminalLauncherManager.STYLE_HINATERM,
     onConfirm: (enabled: Boolean, style: String) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -278,7 +278,7 @@ fun TerminalLauncherOnboardingDialog(
                         )
 
                         // Option 1: HinaTerm (Branded)
-                        val isHinaTermSelected = selectedStyle == TerminalLauncherManager.STYLE_ANTITERM
+                        val isHinaTermSelected = selectedStyle == TerminalLauncherManager.STYLE_HINATERM
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = if (isHinaTermSelected) ClaudeTerracotta.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
@@ -288,7 +288,7 @@ fun TerminalLauncherOnboardingDialog(
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { selectedStyle = TerminalLauncherManager.STYLE_ANTITERM }
+                                .clickable { selectedStyle = TerminalLauncherManager.STYLE_HINATERM }
                         ) {
                             Row(
                                 modifier = Modifier
@@ -326,7 +326,7 @@ fun TerminalLauncherOnboardingDialog(
 
                                 RadioButton(
                                     selected = isHinaTermSelected,
-                                    onClick = { selectedStyle = TerminalLauncherManager.STYLE_ANTITERM },
+                                    onClick = { selectedStyle = TerminalLauncherManager.STYLE_HINATERM },
                                     colors = RadioButtonDefaults.colors(selectedColor = ClaudeTerracotta)
                                 )
                             }

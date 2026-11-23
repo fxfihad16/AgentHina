@@ -100,7 +100,7 @@ class AuthPreferences(private val context: Context) {
         val HAS_SEEN_TERMINAL_LAUNCHER_ONBOARDING = androidx.datastore.preferences.core.booleanPreferencesKey("has_seen_terminal_launcher_onboarding")
         val IS_HINA_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("is_hina_enabled")
         val HAS_SEEN_HINA_INTRO = androidx.datastore.preferences.core.booleanPreferencesKey("has_seen_hina_intro")
-        val TERMINAL_LAUNCHER_STYLE = stringPreferencesKey("terminal_launcher_style") // "ANTITERM" or "TERMUX"
+        val TERMINAL_LAUNCHER_STYLE = stringPreferencesKey("terminal_launcher_style") // "HINATERM" or "TERMUX"
         val IS_TERMINAL_LAUNCHER_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("is_terminal_launcher_enabled")
         val ENVIRONMENT_TYPE = stringPreferencesKey("environment_type") // "TERMUX" or "UBUNTU_CHROOT"
         val CHROOT_USERNAME = stringPreferencesKey("chroot_username")
@@ -1251,7 +1251,7 @@ class AuthPreferences(private val context: Context) {
     }
 
     val terminalLauncherStyle: Flow<String> = context.dataStore.data.map {
-        it[TERMINAL_LAUNCHER_STYLE] ?: "ANTITERM"
+        it[TERMINAL_LAUNCHER_STYLE] ?: "HINATERM"
     }
 
     suspend fun setTerminalLauncherStyle(style: String) {

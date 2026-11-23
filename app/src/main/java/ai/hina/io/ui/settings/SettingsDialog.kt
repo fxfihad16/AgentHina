@@ -2163,7 +2163,7 @@ private fun AppearanceSubScreen(
                         )
 
                         // Option 1: HinaTerm
-                        val isHinaTerm = terminalLauncherStyle == ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_ANTITERM
+                        val isHinaTerm = terminalLauncherStyle == ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_HINATERM
                         Surface(
                             shape = RoundedCornerShape(10.dp),
                             color = if (isHinaTerm) ClaudeTerracotta.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
@@ -2174,14 +2174,14 @@ private fun AppearanceSubScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    terminalLauncherStyle = ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_ANTITERM
+                                    terminalLauncherStyle = ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_HINATERM
                                     ai.hina.io.data.preferences.TerminalLauncherManager.applyLauncherSetting(
                                         context = context,
                                         enabled = true,
-                                        style = ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_ANTITERM
+                                        style = ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_HINATERM
                                     )
                                     coroutineScope.launch {
-                                        authPrefs.setTerminalLauncherStyle(ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_ANTITERM)
+                                        authPrefs.setTerminalLauncherStyle(ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_HINATERM)
                                     }
                                 }
                         ) {
@@ -2222,14 +2222,14 @@ private fun AppearanceSubScreen(
                                 RadioButton(
                                     selected = isHinaTerm,
                                     onClick = {
-                                        terminalLauncherStyle = ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_ANTITERM
+                                        terminalLauncherStyle = ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_HINATERM
                                         ai.hina.io.data.preferences.TerminalLauncherManager.applyLauncherSetting(
                                             context = context,
                                             enabled = true,
-                                            style = ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_ANTITERM
+                                            style = ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_HINATERM
                                         )
                                         coroutineScope.launch {
-                                            authPrefs.setTerminalLauncherStyle(ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_ANTITERM)
+                                            authPrefs.setTerminalLauncherStyle(ai.hina.io.data.preferences.TerminalLauncherManager.STYLE_HINATERM)
                                         }
                                     },
                                     colors = RadioButtonDefaults.colors(selectedColor = ClaudeTerracotta)

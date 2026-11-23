@@ -71,6 +71,23 @@ android {
         buildConfigField("String", "APK_SUFFIX", "\"$apkSuffix\"")
     }
 
+    // Two builds of the same app (same applicationId, so one updates the other): `personal` bakes Fihad's own
+    // instruction pack into the environment (HinaInstructionsSeeder + GlobalContext, assets from the personal
+    // source set — see app/src/personal/README.md); `shareable` seeds nothing and is the build friends get.
+    // The public repo builds shareable by default (scripts/build_all_apks.sh); the personal APK is built from
+    // the private repo only, because its asset must never be committed here.
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("personal") {
+            dimension = "distribution"
+            buildConfigField("boolean", "IS_PERSONAL_BUILD", "true")
+        }
+        create("shareable") {
+            dimension = "distribution"
+            buildConfigField("boolean", "IS_PERSONAL_BUILD", "false")
+        }
+    }
+
     // the glibc runtime of this build's CPU (assets/glibc-min-<abi>.tar.xz)
     sourceSets.getByName("main").assets.srcDir("src/abi/$targetAbi/assets")
 

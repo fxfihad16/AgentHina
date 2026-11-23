@@ -1522,6 +1522,9 @@ object LocalEnvironmentManager {
             authPreferences.setLocalToolsInstalled(true, BOOTSTRAP_VERSION)
             authPreferences.setLocalToolsEnabled(true)
             authPreferences.setTerminalToolEnabled(true)
+            // Personal build: seed Fihad's own instruction pack into the fresh environment (a no-op on
+            // shareable builds, and it never overwrites files the user already has).
+            HinaInstructionsSeeder.seedIfNeeded(appContext)
 
             _installerState.value = LocalInstallerState.Success(
                 message = "Termux Linux environment verified and installed successfully!",
@@ -1790,6 +1793,9 @@ object LocalEnvironmentManager {
                 Log.w(TAG, "Glibc lib symlink setup: ${e.message}")
             }
         }
+        // Personal build installed over an existing environment: seed the pack if its files are still missing
+        // (a no-op on shareable builds and once the files exist).
+        HinaInstructionsSeeder.seedIfNeeded(context)
         return ldLinux.exists()
     }
 

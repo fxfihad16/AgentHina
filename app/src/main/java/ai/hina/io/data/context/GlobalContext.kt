@@ -44,6 +44,13 @@ object GlobalContext {
     private var sp: SharedPreferences? = null
     private var filesDir: String = "/data/data/${BuildConfig.APPLICATION_ID}/files"
 
+    /**
+     * Personal build only: the short standing-rules entry (~30 lines) every agent gets, including `agy` (which has
+     * no instruction file of its own). Read from the personal flavor's asset at init; null on shareable builds.
+     * No personal text is hardcoded here — the asset lives in the private repo only.
+     */
+    private var personalContext: String? = null
+
     private val _builtInEnabled = MutableStateFlow(true)
     val builtInEnabled: StateFlow<Boolean> = _builtInEnabled.asStateFlow()
 
@@ -78,6 +85,7 @@ object GlobalContext {
             synchronized(sent) { o.keys().forEach { k -> sent[k] = o.getString(k) } }
         }
         sp = p
+        personalContext = ai.hina.io.data.local.HinaInstructionsSeeder.loadPersonalContext(context.applicationContext)
     }
 
     // ------------------------------------------------------------------ settings
@@ -171,6 +179,11 @@ object GlobalContext {
         append("Request vague or ambiguous? Don't guess: ask with your question tool (e.g. AskUserQuestion), all at once, with a few options.\n\n")
         append("$h Node projects\n")
         append("New projects: use pnpm (faster, less disk) unless the user says otherwise. Existing npm projects (package-lock.json) stay on npm.")
+        // Personal build: the user's own standing rules, from the personal flavor's asset (null on shareable builds).
+        personalContext?.takeIf { it.isNotBlank() }?.let {
+            append("\n\n$h The user's standing rules\n")
+            append(it.trim())
+        }
     }.trimEnd()
 
     // ------------------------------------------------------------------ what goes where

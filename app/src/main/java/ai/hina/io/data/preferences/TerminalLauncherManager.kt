@@ -6,7 +6,7 @@ import android.content.pm.PackageManager
 import android.util.Log
 
 object TerminalLauncherManager {
-    const val STYLE_ANTITERM = "ANTITERM"
+    const val STYLE_HINATERM = "HINATERM"
     const val STYLE_TERMUX = "TERMUX"
 
     private const val TAG = "TerminalLauncherMgr"
@@ -50,10 +50,10 @@ object TerminalLauncherManager {
             if (classicState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
                 STYLE_TERMUX
             } else {
-                STYLE_ANTITERM
+                STYLE_HINATERM
             }
         } catch (_: Exception) {
-            STYLE_ANTITERM
+            STYLE_HINATERM
         }
     }
 
@@ -62,7 +62,7 @@ object TerminalLauncherManager {
      *
      * @param context Application context
      * @param enabled Whether the standalone terminal icon should appear in launcher / app drawer
-     * @param style Either [STYLE_ANTITERM] or [STYLE_TERMUX]
+     * @param style Either [STYLE_HINATERM] or [STYLE_TERMUX]
      */
     fun applyLauncherSetting(context: Context, enabled: Boolean, style: String) {
         val pm = context.packageManager

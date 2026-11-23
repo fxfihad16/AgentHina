@@ -6,6 +6,9 @@ set -euo pipefail
 # Builds the app (ai.hina.io). --x86_64 builds the x86_64 APK instead of the arm64 one (gradle -Pabi=x86_64);
 # --chroot builds the arm64 APK with the Ubuntu chroot's Linux bridge (gradle -Pchroot=true). The normal arm64 release
 # leaves that bridge out; the x86_64 APK always has it. Debug builds have it unless gradle -Pchroot=false.
+# Flavors: shareable (default — the build friends get, no personal pack) or --personal (Fihad's own build, seeds his
+# instruction pack when the asset is present; the asset lives only in the private repo, so a personal build from
+# the public checkout builds fine but seeds nothing).
 # -----------------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,13 +18,19 @@ OUTPUT_DIR="${ROOT_DIR}/output"
 MODE="debug"
 ABI="arm64"
 CHROOT=""
+FLAVOR="shareable"
 for arg in "$@"; do
     case "$arg" in
         --release|-r) MODE="release" ;;
         --x86_64) ABI="x86_64" ;;
         --chroot) CHROOT="true" ;;
+        --personal) FLAVOR="personal" ;;
+        --shareable) FLAVOR="shareable" ;;
     esac
 done
+# gradle variant names are camelCase: assembleShareableRelease, assemblePersonalDebug, ...
+FLAVOR_CAP="$(tr '[:lower:]' '[:upper:]' <<< "${FLAVOR:0:1}")${FLAVOR:1}"
+MODE_CAP="$(tr '[:lower:]' '[:upper:]' <<< "${MODE:0:1}")${MODE:1}"
 # file names: the arm64 build has none of these suffixes (the in-app updater asks for the name of its own build)
 SUFFIX=""
 ARCHIVE="agentHina"
@@ -38,7 +47,7 @@ elif [[ "${CHROOT}" == "true" ]]; then
 fi
 
 echo "================================================================="
-echo "🚀 Building Agent Hina Packages in [${MODE^^}] mode for ${ABI}${SUFFIX:+ (${SUFFIX#-})}"
+echo "🚀 Building Agent Hina Packages in [${MODE^^}] mode for ${ABI}${SUFFIX:+ (${SUFFIX#-})} [flavor: ${FLAVOR}]"
 echo "================================================================="
 
 # Extract version from version.json
@@ -52,15 +61,15 @@ fi
 echo "📦 Version Name: v${VERSION_NAME} (Code: ${VERSION_CODE})"
 mkdir -p "${OUTPUT_DIR}"
 
-APKS_SRC="${ROOT_DIR}/app/build/outputs/apk"
+APKS_SRC="${ROOT_DIR}/app/build/outputs/apk/${FLAVOR}"
 if [[ "${MODE}" == "release" ]]; then
-    echo "🔨 Compiling Release (:app:assembleRelease)..."
-    "${ROOT_DIR}/gradlew" -p "${ROOT_DIR}" :app:assembleRelease "${GRADLE_ARGS[@]}"
+    echo "🔨 Compiling Release (:app:assemble${FLAVOR_CAP}Release)..."
+    "${ROOT_DIR}/gradlew" -p "${ROOT_DIR}" ":app:assemble${FLAVOR_CAP}Release" "${GRADLE_ARGS[@]}"
     # the release asset; the in-app updater downloads releases/download/v<version>/AgentHina-v<version><suffix>.apk
     cp "${APKS_SRC}/release/${ARCHIVE}-release.apk" "${OUTPUT_DIR}/AgentHina-v${VERSION_NAME}${SUFFIX}.apk"
 else
-    echo "🔨 Compiling Debug (:app:assembleDebug)..."
-    "${ROOT_DIR}/gradlew" -p "${ROOT_DIR}" :app:assembleDebug "${GRADLE_ARGS[@]}"
+    echo "🔨 Compiling Debug (:app:assemble${FLAVOR_CAP}Debug)..."
+    "${ROOT_DIR}/gradlew" -p "${ROOT_DIR}" ":app:assemble${FLAVOR_CAP}Debug" "${GRADLE_ARGS[@]}"
     cp "${APKS_SRC}/debug/${ARCHIVE}-debug.apk" "${OUTPUT_DIR}/AgentHina-v${VERSION_NAME}${SUFFIX}-debug.apk"
 
     # the APK ships the bridge xz-compressed; the uncompressed build is kept under app/build
