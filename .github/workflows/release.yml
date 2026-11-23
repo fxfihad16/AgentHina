@@ -65,6 +65,9 @@ jobs:
         run: |
           chmod +x gradlew scripts/build_all_apks.sh
           ./scripts/build_all_apks.sh --release
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
       # R8 mapping of the arm64 APK, to decode its crash stack traces (retrace). The x86_64 build below
       # writes the same path, so copy it now.
@@ -76,6 +79,9 @@ jobs:
       # updater downloads this file.
       - name: Build chroot Release APK
         run: ./scripts/build_all_apks.sh --release --chroot
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
       - name: Save chroot R8 mapping
         run: zip -j "output/AgentHina-${{ steps.version.outputs.tag }}-chroot-mapping.zip" app/build/outputs/mapping/shareable/release/mapping.txt
@@ -85,6 +91,9 @@ jobs:
       # which the runner has (ANDROID_NDK_HOME).
       - name: Build x86_64 Release APK
         run: ./scripts/build_all_apks.sh --release --x86_64
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
       - name: Save x86_64 R8 mapping
         run: zip -j "output/AgentHina-${{ steps.version.outputs.tag }}-x86_64-mapping.zip" app/build/outputs/mapping/shareable/release/mapping.txt
