@@ -66,11 +66,13 @@ if [[ "${MODE}" == "release" ]]; then
     echo "🔨 Compiling Release (:app:assemble${FLAVOR_CAP}Release)..."
     "${ROOT_DIR}/gradlew" -p "${ROOT_DIR}" ":app:assemble${FLAVOR_CAP}Release" "${GRADLE_ARGS[@]}"
     # the release asset; the in-app updater downloads releases/download/v<version>/AgentHina-v<version><suffix>.apk
-    cp "${APKS_SRC}/release/${ARCHIVE}-release.apk" "${OUTPUT_DIR}/AgentHina-v${VERSION_NAME}${SUFFIX}.apk"
+    # NOTE: with product flavors AGP names the APK <archivesName>-<flavor>-<buildType>.apk
+    # (e.g. agentHina-shareable-release.apk) — the flavor is part of the file name.
+    cp "${APKS_SRC}/release/${ARCHIVE}-${FLAVOR}-release.apk" "${OUTPUT_DIR}/AgentHina-v${VERSION_NAME}${SUFFIX}.apk"
 else
     echo "🔨 Compiling Debug (:app:assemble${FLAVOR_CAP}Debug)..."
     "${ROOT_DIR}/gradlew" -p "${ROOT_DIR}" ":app:assemble${FLAVOR_CAP}Debug" "${GRADLE_ARGS[@]}"
-    cp "${APKS_SRC}/debug/${ARCHIVE}-debug.apk" "${OUTPUT_DIR}/AgentHina-v${VERSION_NAME}${SUFFIX}-debug.apk"
+    cp "${APKS_SRC}/debug/${ARCHIVE}-${FLAVOR}-debug.apk" "${OUTPUT_DIR}/AgentHina-v${VERSION_NAME}${SUFFIX}-debug.apk"
 
     # the APK ships the bridge xz-compressed; the uncompressed build is kept under app/build
     if [[ -f "${ROOT_DIR}/app/build/intermediates/agyIdeBridge/agy_ide_bridge" ]]; then
