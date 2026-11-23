@@ -37,7 +37,7 @@ Only each app's `data/` folder (on disk: `~/.hina/mini-apps/<id>/files/`). Every
 
 | Shared | Not shared |
 |---|---|
-| `data/` files, read and write | `Agent Hina.storage`, `localStorage`, `sessionStorage` |
+| `data/` files, read and write | `Hina.storage`, `localStorage`, `sessionStorage` |
 | | IndexedDB |
 | | Cookies |
 | | Permissions, picked folders, reminders, background tasks, notifications |
@@ -50,24 +50,24 @@ Each app still uses `data/…` for its own folder. The other apps' folders are `
 
 ```js
 // in com.you.tasks
-await Agent Hina.fs.write('app:com.you.notes/inbox/todo.txt', 'Buy milk');
-const items = await Agent Hina.fs.list('app:com.you.notes/inbox');
-const text = await Agent Hina.fs.read('app:com.you.notes/inbox/todo.txt');
+await Hina.fs.write('app:com.you.notes/inbox/todo.txt', 'Buy milk');
+const items = await Hina.fs.list('app:com.you.notes/inbox');
+const text = await Hina.fs.read('app:com.you.notes/inbox/todo.txt');
 ```
 
 - `app:<own id>/…` is the same as `data/…`.
 - The other app must be present on the phone (installed, or a development folder). Until then, and for any app outside the group, the path is refused with `NotAllowedError` (`app:<id>/… is protected`).
 - The other app is checked on disk on every access. If it is deleted, uninstalled, or its manifest no longer has the same `id` and `shared_id`, its folder can't be reached from that moment on.
 - The root of another app's `data/` folder can't be deleted or moved as a whole; its contents can.
-- `Agent Hina.fs.url('app:<id>/photo.jpg')` works like any other readable path (for `<img>`, `<video>`, `fetch`).
-- `app:<id>/…` paths also work in `Agent Hina.ui.viewMedia` items and in notification images (`icon`, `smallIcon`, `image`).
+- `Hina.fs.url('app:<id>/photo.jpg')` works like any other readable path (for `<img>`, `<video>`, `fetch`).
+- `app:<id>/…` paths also work in `Hina.ui.viewMedia` items and in notification images (`icon`, `smallIcon`, `image`).
 
 ## Finding the group
 
-`Agent Hina.fs.folders()` lists the group's folders with `source: "shared"`:
+`Hina.fs.folders()` lists the group's folders with `source: "shared"`:
 
 ```js
-const shared = (await Agent Hina.fs.folders()).filter(f => f.source === 'shared');
+const shared = (await Hina.fs.folders()).filter(f => f.source === 'shared');
 // [{ path: 'app:com.you.notes', access: 'readwrite', source: 'shared', app: { id: 'com.you.notes', name: 'Notes' } }]
 ```
 
@@ -80,21 +80,21 @@ Notes collects items, Tasks drops new ones into Notes' inbox.
 ```js
 // Tasks: send a task to Notes, if Notes is installed
 async function sendToNotes(title) {
-  const notes = (await Agent Hina.fs.folders()).find(f => f.source === 'shared' && f.app.id === 'com.you.notes');
-  if (!notes) return Agent Hina.ui.toast('Install Notes to send tasks there');
-  await Agent Hina.fs.writeJSON(`app:com.you.notes/inbox/${Date.now()}.json`, { title, from: 'tasks' });
+  const notes = (await Hina.fs.folders()).find(f => f.source === 'shared' && f.app.id === 'com.you.notes');
+  if (!notes) return Hina.ui.toast('Install Notes to send tasks there');
+  await Hina.fs.writeJSON(`app:com.you.notes/inbox/${Date.now()}.json`, { title, from: 'tasks' });
 }
 ```
 
 ```js
 // Notes: read its own inbox (the same folder, seen from inside)
 async function readInbox() {
-  if (!(await Agent Hina.fs.exists('data/inbox'))) return;   // list() fails on a missing folder
-  const files = await Agent Hina.fs.list('data/inbox');
+  if (!(await Hina.fs.exists('data/inbox'))) return;   // list() fails on a missing folder
+  const files = await Hina.fs.list('data/inbox');
   for (const f of files.filter(f => f.type === 'file')) {
-    const item = await Agent Hina.fs.readJSON(f.path);
+    const item = await Hina.fs.readJSON(f.path);
     addNote(item.title);
-    await Agent Hina.fs.delete(f.path);
+    await Hina.fs.delete(f.path);
   }
 }
 ```

@@ -75,7 +75,7 @@ Each folder with a `manifest.json` is one app. Write plain HTML, CSS and JavaScr
 ```
 
 - `/_hina/ui.css` is Agent Hina's UI kit: Material 3 components that follow the user's Agent Hina theme, light and dark ([ui.md](ui.md)).
-- Don't add the SDK yourself. Agent Hina puts `<script src="/_hina/sdk.js">` at the top of `<head>` of every HTML page, so `window.Agent Hina` exists before your scripts run. A viewport tag is added too when the page has none.
+- Don't add the SDK yourself. Agent Hina puts `<script src="/_hina/sdk.js">` at the top of `<head>` of every HTML page, so `window.Hina` exists before your scripts run. A viewport tag is added too when the page has none.
 - The app is served at its own origin, `https://com-example-tally.hina.invalid/`, with the app folder as the root: `/style.css` is `tally/style.css`.
 
 ## 4. style.css
@@ -91,10 +91,10 @@ Use the theme variables (`--ag-primary`, `--ag-surface`, `--ag-on-surface`, …)
 ## 5. app.js
 
 ```js
-const AG = window.Agent Hina;
+const AG = window.Hina;
 const countEl = document.getElementById('count');
 
-// Agent Hina.storage: native, synchronous, JSON values, survives restarts
+// Hina.storage: native, synchronous, JSON values, survives restarts
 let count = AG.storage.get('count', 0);
 render();
 
@@ -164,7 +164,7 @@ The same console is written to a file, for agents and for `tail -f`:
 tail -f ~/.hina/mini-apps/com.example.tally/console.log
 ```
 
-Lines look like `14:03:22.418 ERROR Uncaught TypeError: … (/app.js:12)`. Blocked requests, 404s and permission errors are logged there too. From code: `Agent Hina.dev.console()` opens the console, `Agent Hina.dev.devtools()` opens Eruda.
+Lines look like `14:03:22.418 ERROR Uncaught TypeError: … (/app.js:12)`. Blocked requests, 404s and permission errors are logged there too. From code: `Hina.dev.console()` opens the console, `Hina.dev.devtools()` opens Eruda.
 
 ## 10. Reset the app's data
 
@@ -174,7 +174,7 @@ The data lives in `~/.hina/mini-apps/<id>/`, outside the app folder, so editing 
 
 | File | Holds |
 |---|---|
-| `kv.db` | `localStorage` and `Agent Hina.storage` |
+| `kv.db` | `localStorage` and `Hina.storage` |
 | `idb.db` | IndexedDB |
 | `cookies.db` | The app's cookie jar |
 | `files/` | The app's `data/` folder |
@@ -201,8 +201,8 @@ Saving the manifest reloads the app; `request()` shows the native prompt. See [n
 
 - [ ] **Offline first.** Don't load CDNs or web fonts unless the app truly needs the network and declares it. Bundle small libraries into the folder.
 - [ ] **Theme colors only.** Use the UI kit or the `--ag-*` variables for every color; test in light and dark. Never hard-code white or black backgrounds.
-- [ ] **Native UI.** Use `Agent Hina.ui` for dialogs, sheets, pickers and toasts, and `Agent Hina.device.haptic` on important taps.
-- [ ] **Handle back.** Register `Agent Hina.onBack` to close in-page panels and go back to the first tab before the app closes.
+- [ ] **Native UI.** Use `Hina.ui` for dialogs, sheets, pickers and toasts, and `Hina.device.haptic` on important taps.
+- [ ] **Handle back.** Register `Hina.onBack` to close in-page panels and go back to the first tab before the app closes.
 - [ ] **Fewest permissions.** Declare only what you use, the narrowest hosts and folders, and handle `NotAllowedError` with a friendly message.
 - [ ] **No errors.** Test with the console or `console.log`, and fix every error before calling the app done.
 - [ ] **Stable id, growing version.** Never change `id`; bump `version` with every change you ship.

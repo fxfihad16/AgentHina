@@ -1,13 +1,13 @@
 # Agent Hina Mini Apps
 
-A mini app is a plain folder of HTML, CSS and JavaScript that Agent Hina opens full screen like a real Android app. It gets its own Recents card and home-screen icon, native screens and dialogs, native storage, files, network, notifications, reminders and background tasks, all through a JavaScript SDK (`window.Agent Hina`) and gated by permissions the user grants. Apps are built on the phone, usually by an AI agent, with no build step; finished apps are shared as signed `.agapp` packages that install and update like APKs. These pages are the complete guide for people and agents who build mini apps.
+A mini app is a plain folder of HTML, CSS and JavaScript that Agent Hina opens full screen like a real Android app. It gets its own Recents card and home-screen icon, native screens and dialogs, native storage, files, network, notifications, reminders and background tasks, all through a JavaScript SDK (`window.Hina`) and gated by permissions the user grants. Apps are built on the phone, usually by an AI agent, with no build step; finished apps are shared as signed `.agapp` packages that install and update like APKs. These pages are the complete guide for people and agents who build mini apps.
 
 ## How it works
 
 - **The WebView only renders.** Each app is served from disk at its own origin, `https://<slug>.hina.invalid/` (the slug comes from the app's id), with the app folder as the root. A strict Content Security Policy lets the page connect only to its own origin. Everything else goes through native code.
-- **Everything else is native.** `localStorage`, `sessionStorage`, `Agent Hina.storage` and IndexedDB are kept in SQLite files outside the WebView. `fetch`, `XMLHttpRequest`, `WebSocket` and `EventSource` go through the phone's network stack (no CORS limits, a permanent cookie jar per app). Files, dialogs, sheets, pickers, the media viewer, notifications, reminders, background tasks, threads, intents and Agent Hina's MCP tools are native modules. The SDK is injected into every page and worker before the app's own scripts run.
+- **Everything else is native.** `localStorage`, `sessionStorage`, `Hina.storage` and IndexedDB are kept in SQLite files outside the WebView. `fetch`, `XMLHttpRequest`, `WebSocket` and `EventSource` go through the phone's network stack (no CORS limits, a permanent cookie jar per app). Files, dialogs, sheets, pickers, the media viewer, notifications, reminders, background tasks, threads, intents and Agent Hina's MCP tools are native modules. The SDK is injected into every page and worker before the app's own scripts run.
 - **Permissions like a small Android.** An app can only use what its `manifest.json` declares, and the user allows or denies each permission (each folder separately). Undeclared or denied calls fail with `NotAllowedError`. Some places are never reachable whatever is granted ([permissions.md](permissions.md)).
-- **Each app is its own Android task.** Its own Recents card with its name, icon and color; a splash screen; every page opened with `Agent Hina.nav.push` is a native screen with system back and slide animations.
+- **Each app is its own Android task.** Its own Recents card with its name, icon and color; a splash screen; every page opened with `Hina.nav.push` is a native screen with system back and slide animations.
 - **Development apps and installed apps.** A development app is a folder in `~/mini-apps/`: unsigned, editable, hot-reloaded, with a developer bubble and a `DEV` label; it only runs with Developer mode on. An installed app comes from a signed `.agapp` package: its code is read-only in Agent Hina's private storage and every file is checked against the signature when it loads.
 - **Signing.** Packages are signed with the developer's EC P-256 key. The first install records the key; updates must use the same key; an older version needs the user's OK. The key lives encrypted on the phone (Android Keystore), is backed up as a password-protected `.agkey` file, and works with the PC tool `agapp.mjs` too ([signing-and-distribution.md](signing-and-distribution.md)).
 
@@ -21,7 +21,7 @@ A mini app is a plain folder of HTML, CSS and JavaScript that Agent Hina opens f
 | `~/mini-apps/README.md` | A one-file summary guide for agents, refreshed by every Agent Hina update |
 | `~/mini-apps/tools/agapp.mjs` | The Node tool that signs and verifies packages (for a PC), updated with every Agent Hina version |
 | `~/.hina/mini-apps/<id>/` | Every app's data (development and installed): |
-| `  kv.db` | `localStorage` and `Agent Hina.storage` |
+| `  kv.db` | `localStorage` and `Hina.storage` |
 | `  idb.db` | IndexedDB |
 | `  cookies.db` | The app's cookie jar |
 | `  files/` | The app's private `data/` folder |
@@ -63,12 +63,12 @@ The data folder is outside the app folder on purpose: editing or replacing an ap
 | Page | What it covers |
 |---|---|
 | [api-reference.md](api-reference.md) | The whole `Agent Hina` SDK on one page, events, error names |
-| [storage.md](storage.md) | `localStorage`, `sessionStorage`, `Agent Hina.storage`, IndexedDB, cookies, quotas |
-| [files.md](files.md) | `Agent Hina.fs`: paths, granted folders, reading and writing, file URLs, pickers |
+| [storage.md](storage.md) | `localStorage`, `sessionStorage`, `Hina.storage`, IndexedDB, cookies, quotas |
+| [files.md](files.md) | `Hina.fs`: paths, granted folders, reading and writing, file URLs, pickers |
 | [network.md](network.md) | `fetch`, XHR, WebSocket, EventSource, web resources, cookies and credentials |
 | [ui.md](ui.md) | The UI kit, theme and dark mode, native dialogs, media viewer, pages and navigation, back, device helpers |
-| [notifications.md](notifications.md) | `Agent Hina.notify`: notifications, channels, events, reminders |
+| [notifications.md](notifications.md) | `Hina.notify`: notifications, channels, events, reminders |
 | [background.md](background.md) | Background tasks: setup, schedules, handlers, limits |
 | [intents.md](intents.md) | Sharing with other apps, receiving intents, links into apps, lifecycle events, device status |
-| [threads.md](threads.md) | `Agent Hina.thread` and workers |
+| [threads.md](threads.md) | `Hina.thread` and workers |
 | [mcp.md](mcp.md) | Calling Agent Hina's MCP tools from an app |

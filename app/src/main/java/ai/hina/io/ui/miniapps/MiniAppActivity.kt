@@ -95,7 +95,7 @@ sealed class NativeDialog {
 
 /**
  * A mini app on screen. The root page ([MiniAppActivity]) is its own task (own Recents card, icon and color);
- * pages opened with Agent Hina.nav.push are [MiniAppPageActivity] in the same task, so back/swipe and the
+ * pages opened with Hina.nav.push are [MiniAppPageActivity] in the same task, so back/swipe and the
  * slide transitions are the system's.
  */
 open class MiniAppActivity : ComponentActivity(), MiniAppHost {
@@ -621,7 +621,7 @@ open class MiniAppActivity : ComponentActivity(), MiniAppHost {
     }
 }
 
-/** A page opened with Agent Hina.nav.push: same task as the root, slides in and out. */
+/** A page opened with Hina.nav.push: same task as the root, slides in and out. */
 class MiniAppPageActivity : MiniAppActivity() {
     override val isPushed = true
 }

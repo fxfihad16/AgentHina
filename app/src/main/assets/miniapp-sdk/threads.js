@@ -2,7 +2,7 @@
  * Agent Hina Mini Apps SDK: threads. Runs in pages and workers.
  *  - Every Worker gets the SDK first (native fetch/XHR/WebSocket/indexedDB/Agent Hina inside the thread):
  *    same-origin worker files get it injected by the runtime (?__agw), blob: workers get a small bootstrap.
- *  - Agent Hina.thread: run a function on another CPU core without writing a worker file. Each thread is a real
+ *  - Hina.thread: run a function on another CPU core without writing a worker file. Each thread is a real
  *    OS thread with its own V8 engine; a pool sized to the phone's cores is kept warm and reused.
  */
 (function () {
@@ -41,7 +41,7 @@
     AG.define(G, 'Worker', Worker);
   }
 
-  // ------------------------------------------------------------------ Agent Hina.thread
+  // ------------------------------------------------------------------ Hina.thread
   // What each pool thread runs: receive {src, args}, call the function, send the result back.
   var RUNNER = '(' + function () {
     var cache = new Map();
@@ -56,7 +56,7 @@
       Promise.resolve().then(function () {
         var f = cache.get(d.src);
         if (!f) { f = (0, eval)('(' + d.src + ')'); cache.set(d.src, f); }
-        if (typeof f !== 'function') throw new TypeError('Agent Hina.thread.run needs a function');
+        if (typeof f !== 'function') throw new TypeError('Hina.thread.run needs a function');
         return f.apply(null, d.args || []);
       }).then(function (r) {
         try { self.postMessage({ __agt: 1, id: d.id, ok: true, r: r }, transferList(r)); }
@@ -146,5 +146,5 @@
     map: function (items, fn) { shared = shared || Pool(); return shared.map(items, fn); },
     pool: function (o) { return Pool(o && typeof o === 'object' ? o.size : o); }
   };
-  if (G.Agent Hina) G.Agent Hina.thread = thread;
+  if (G.Hina) G.Hina.thread = thread;
 })();

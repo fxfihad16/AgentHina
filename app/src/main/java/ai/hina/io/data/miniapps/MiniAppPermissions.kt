@@ -377,7 +377,7 @@ object MiniAppPermissions {
         return grants(context, app).any { it.root.path == f.path }
     }
 
-    // ---------- folders the user picked at runtime (Agent Hina.fs.pickFolder) ----------
+    // ---------- folders the user picked at runtime (Hina.fs.pickFolder) ----------
 
     private fun pickPrefs(context: Context) = context.getSharedPreferences("mini_app_picked_folders", Context.MODE_PRIVATE)
 

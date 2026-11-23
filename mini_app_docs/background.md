@@ -8,7 +8,7 @@ per app per day, 60 seconds each, one at a time across all apps. Background task
 script and the `background` permission.
 
 For a notification at a fixed time with no code to run, use a reminder instead
-([`Agent Hina.notify.schedule`](notifications.md#reminders)): it needs no background permission and has no daily limit.
+([`Hina.notify.schedule`](notifications.md#reminders)): it needs no background permission and has no daily limit.
 
 ## Setup
 
@@ -27,9 +27,9 @@ For a notification at a fixed time with no code to run, use a reminder instead
 2. In `background.js`, register a handler for each task, at the top level of the script:
 
    ```js
-   Agent Hina.background.on('sync', async (task) => {
+   Hina.background.on('sync', async (task) => {
      const items = await (await fetch('https://api.example.com/new')).json();
-     if (items.length) await Agent Hina.notify.show({ id: 'sync', title: `${items.length} new items` });
+     if (items.length) await Hina.notify.show({ id: 'sync', title: `${items.length} new items` });
    });
    ```
 
@@ -37,8 +37,8 @@ For a notification at a fixed time with no code to run, use a reminder instead
    task keeps its timing.
 
    ```js
-   if (await Agent Hina.permissions.request('background') === 'granted') {
-     await Agent Hina.background.register('sync', { every: '1h', network: 'any' });
+   if (await Hina.permissions.request('background') === 'granted') {
+     await Hina.background.register('sync', { every: '1h', network: 'any' });
    }
    ```
 
@@ -74,10 +74,10 @@ Conditions, for `every` and `delay` only (an `at` task runs at its time regardle
 | `batteryNotLow` | boolean | `false` | Wait while the battery is low |
 
 ```js
-await Agent Hina.background.register('rain-check', { every: '1h', network: 'any' });
-await Agent Hina.background.register('digest', { at: '07:30', repeat: 'daily' });
-await Agent Hina.background.register('cleanup', { delay: '10m' });
-await Agent Hina.background.register('backup', { every: '1d', network: 'unmetered', charging: true });
+await Hina.background.register('rain-check', { every: '1h', network: 'any' });
+await Hina.background.register('digest', { at: '07:30', repeat: 'daily' });
+await Hina.background.register('cleanup', { delay: '10m' });
+await Hina.background.register('backup', { every: '1d', network: 'unmetered', charging: true });
 ```
 
 Registering a task name again replaces its options. Re-registering an `every` task with the same kind of schedule
@@ -87,12 +87,12 @@ starts its delay over.
 ## The handler
 
 ```js
-Agent Hina.background.on('hn-digest', async (task) => {
+Hina.background.on('hn-digest', async (task) => {
   // task = {name, reason, runId, data}
   const [topId] = await (await fetch('https://hacker-news.firebaseio.com/v0/topstories.json')).json();
   if (localStorage.getItem('hn.top') === String(topId)) return;
   localStorage.setItem('hn.top', String(topId));
-  await Agent Hina.notify.show({ id: 'hn', title: 'New #1 on Hacker News' });
+  await Hina.notify.show({ id: 'hn', title: 'New #1 on Hacker News' });
   console.log(`hn-digest (${task.reason}): ${topId}`);
 });
 ```
@@ -120,7 +120,7 @@ background script with the task name `notification` (when the app has a backgrou
 permission). The event is in `task.data`:
 
 ```js
-Agent Hina.background.on('notification', async (task) => {
+Hina.background.on('notification', async (task) => {
   const e = task.data;                     // {id, action, reply?}
   if (e.id === 'timer' && e.action === 'pause') await pauseTimerFromStoredState();
   if (e.reply) localStorage.setItem('lastReply', e.reply);
@@ -140,16 +140,16 @@ same permissions as the app's pages.
 
 | Works | Doesn't |
 |---|---|
-| `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource` | Dialogs: `Agent Hina.ui.alert/confirm/prompt/sheet/pickDate/pickTime/viewMedia` reject with `NotSupportedError` |
-| `localStorage`, `sessionStorage`, `Agent Hina.storage`, IndexedDB | `Agent Hina.fs.pick`, `Agent Hina.fs.pickFolder` (`NotSupportedError`) |
-| `Agent Hina.fs` (read and write), `Agent Hina.cookies` | `Agent Hina.nav.push`, `Agent Hina.device.share`, `Agent Hina.device.openUrl`, `Agent Hina.intent.send` (`NotSupportedError`) |
-| `Agent Hina.notify` (show, schedule, …) | `Agent Hina.permissions.request` shows no prompt; it returns the current state |
-| `Agent Hina.mcp`, `Agent Hina.thread`, Web Workers | `Agent Hina.ui.toast` and `Agent Hina.ui.statusBar` do nothing |
-| `Agent Hina.background.register/list/cancel/run` | `alert()` returns at once, `confirm()` returns `false` and `prompt()` returns `null`, with a warning in the console |
-| `Agent Hina.device.copy/info/status`, `console.*` | `resume`, `pause`, `network`, `battery` events are not sent |
+| `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource` | Dialogs: `Hina.ui.alert/confirm/prompt/sheet/pickDate/pickTime/viewMedia` reject with `NotSupportedError` |
+| `localStorage`, `sessionStorage`, `Hina.storage`, IndexedDB | `Hina.fs.pick`, `Hina.fs.pickFolder` (`NotSupportedError`) |
+| `Hina.fs` (read and write), `Hina.cookies` | `Hina.nav.push`, `Hina.device.share`, `Hina.device.openUrl`, `Hina.intent.send` (`NotSupportedError`) |
+| `Hina.notify` (show, schedule, …) | `Hina.permissions.request` shows no prompt; it returns the current state |
+| `Hina.mcp`, `Hina.thread`, Web Workers | `Hina.ui.toast` and `Hina.ui.statusBar` do nothing |
+| `Hina.background.register/list/cancel/run` | `alert()` returns at once, `confirm()` returns `false` and `prompt()` returns `null`, with a warning in the console |
+| `Hina.device.copy/info/status`, `console.*` | `resume`, `pause`, `network`, `battery` events are not sent |
 
-`localStorage` and `Agent Hina.storage` changes made here reach open pages of the app as `storage` events, as usual.
-`Agent Hina.page.background` and `Agent Hina.background.isBackground` are `true`.
+`localStorage` and `Hina.storage` changes made here reach open pages of the app as `storage` events, as usual.
+`Hina.page.background` and `Hina.background.isBackground` are `true`.
 
 ## Limits
 
@@ -176,7 +176,7 @@ stops all scheduled work until Agent Hina is opened again.
 
 ## Seeing what happened
 
-- `Agent Hina.background.list()` returns each task with its `lastRun`.
+- `Hina.background.list()` returns each task with its `lastRun`.
 - App info → Background lists the tasks, their last run (time, status, duration, error), how many of the 48 daily
   runs were used, and a "Run now" button.
 - Every run writes a line to the app's console log, like `Background task "sync" (schedule) finished in 812 ms`

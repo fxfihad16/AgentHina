@@ -1,6 +1,6 @@
 # Storage
 
-A mini app keeps its data natively, outside the WebView: `localStorage`, `sessionStorage` and `Agent Hina.storage` live
+A mini app keeps its data natively, outside the WebView: `localStorage`, `sessionStorage` and `Hina.storage` live
 in a native key-value store, IndexedDB is stored in SQLite, cookies are in the app's own persistent jar, and files go
 in the app's private `data/` folder (see [files](files.md)). None of this needs a permission. Each app's data is
 separate from every other app's, survives app updates and Agent Hina restarts, and is removed by "Clear data" or
@@ -12,12 +12,12 @@ All of an app's data is in `~/.hina/mini-apps/<app id>/`, never in the app folde
 
 | File / folder | Holds |
 |---|---|
-| `kv.db` | `localStorage` and `Agent Hina.storage` (SQLite) |
+| `kv.db` | `localStorage` and `Hina.storage` (SQLite) |
 | `idb.db` | Every IndexedDB database of the app (SQLite) |
 | `cookies.db` | The cookie jar |
 | `files/` | The app's `data/` folder |
 | `net-cache/` | HTTP cache of the native network layer (up to 50 MB) |
-| `thumbs/` | Cached thumbnails from `Agent Hina.fs.url(path, {thumb})` |
+| `thumbs/` | Cached thumbnails from `Hina.fs.url(path, {thumb})` |
 | `console.log` | Console output (see [troubleshooting](troubleshooting.md)) |
 
 Reminders and background tasks are kept by Agent Hina itself, not in this folder.
@@ -45,7 +45,7 @@ window.addEventListener('storage', (e) => {
 });
 ```
 
-## Agent Hina.storage
+## Hina.storage
 
 A small key-value API on the same native store, in its own namespace (its keys never clash with `localStorage`).
 Values are saved as JSON, so objects and arrays come back as objects and arrays.
@@ -55,19 +55,19 @@ Values are saved as JSON, so objects and arrays come back as objects and arrays.
 | `get(key, fallback?)` | value | Parsed value, or `fallback` when the key is missing. A stored value that isn't valid JSON comes back as a string |
 | `set(key, value)` | `undefined` | Saves `JSON.stringify(value)`; `undefined` is saved as `null` |
 | `remove(key)` | `undefined` | Deletes the key |
-| `keys()` | `string[]` | Keys of `Agent Hina.storage` only |
-| `clear()` | `undefined` | Deletes all `Agent Hina.storage` keys (not `localStorage`) |
+| `keys()` | `string[]` | Keys of `Hina.storage` only |
+| `clear()` | `undefined` | Deletes all `Hina.storage` keys (not `localStorage`) |
 
 ```js
-const settings = Agent Hina.storage.get('settings', { units: 'metric', alerts: true });
+const settings = Hina.storage.get('settings', { units: 'metric', alerts: true });
 settings.alerts = false;
-Agent Hina.storage.set('settings', settings);
+Hina.storage.set('settings', settings);
 
-// another page of the app changed Agent Hina.storage
-Agent Hina.on('storage', ({ key }) => { if (key === 'settings' || key === null) reload(); });
+// another page of the app changed Hina.storage
+Hina.on('storage', ({ key }) => { if (key === 'settings' || key === null) reload(); });
 ```
 
-`Agent Hina.storage` changes made by other pages fire `Agent Hina.on('storage', …)` with `{key}` (`key` is `null` after
+`Hina.storage` changes made by other pages fire `Hina.on('storage', …)` with `{key}` (`key` is `null` after
 `clear()`), not the `window` `storage` event. Like `localStorage`, it is synchronous, write-behind, and not available
 in workers.
 
@@ -121,7 +121,7 @@ tx.oncomplete = () => console.log('saved');
   browsers allow.
 - Class instances are stored as plain objects (their own enumerable properties). Two references to the same object
   are stored as two copies.
-- `Blob` and `File` contents are stored inside the database row. Keep large media in files (`Agent Hina.fs`) and store
+- `Blob` and `File` contents are stored inside the database row. Keep large media in files (`Hina.fs`) and store
   the path instead.
 
 ### Known limits
@@ -148,7 +148,7 @@ HTTP request (`fetch`, `XMLHttpRequest`, `EventSource`, `sendBeacon`, WebSocket 
 `https` images, styles, fonts and scripts) and stores every `Set-Cookie` it receives, including on redirects. A login cookie therefore keeps working after
 Agent Hina restarts. See [network](network.md#cookies-and-credentials) for how requests use it.
 
-`Agent Hina.cookies` reads and changes the jar. Every `url` must be a host the app may reach (its `network` hosts, or
+`Hina.cookies` reads and changes the jar. Every `url` must be a host the app may reach (its `network` hosts, or
 `localhost` with that permission); others reject with `NotAllowedError`.
 
 | Method | Returns | Meaning |
@@ -181,11 +181,11 @@ Without `expires` or `maxAge`, a cookie the app sets lasts 400 days.
 
 ```js
 // a token the user pasted from a browser session
-const n = await Agent Hina.cookies.import('https://api.example.com/', userPastedHeader);
+const n = await Hina.cookies.import('https://api.example.com/', userPastedHeader);
 
-await Agent Hina.cookies.set({ url: 'https://api.example.com/', name: 'lang', value: 'en', maxAge: 30 * 86400 });
-const all = await Agent Hina.cookies.list('https://api.example.com/');
-await Agent Hina.cookies.clear('https://api.example.com/');
+await Hina.cookies.set({ url: 'https://api.example.com/', name: 'lang', value: 'en', maxAge: 30 * 86400 });
+const all = await Hina.cookies.list('https://api.example.com/');
+await Hina.cookies.clear('https://api.example.com/');
 ```
 
 Jar rules:
@@ -198,13 +198,13 @@ Jar rules:
 
 ## Quotas
 
-There is no fixed quota on `localStorage`, `Agent Hina.storage`, IndexedDB or files. The practical limits are the phone's
+There is no fixed quota on `localStorage`, `Hina.storage`, IndexedDB or files. The practical limits are the phone's
 free space and these:
 
 | What | Limit |
 |---|---|
-| `localStorage` + `Agent Hina.storage` | No quota, but the whole store is copied into every page when it loads: keep it small (settings, small state) and put bulk data in IndexedDB or files |
-| `Agent Hina.fs.read` | 64 MB per call (`QuotaExceededError`); stream bigger files with `Agent Hina.fs.url()` |
+| `localStorage` + `Hina.storage` | No quota, but the whole store is copied into every page when it loads: keep it small (settings, small state) and put bulk data in IndexedDB or files |
+| `Hina.fs.read` | 64 MB per call (`QuotaExceededError`); stream bigger files with `Hina.fs.url()` |
 | HTTP cache | 50 MB per app |
 | Cookies | 4096 characters per cookie, 180 per domain, 3000 per app |
 
@@ -217,15 +217,15 @@ free space and these:
   until they reload.
 - **Uninstalling** an installed app removes the app and all of the above. See
   [signing and distribution](signing-and-distribution.md).
-- From code, clear what you own: `localStorage.clear()`, `Agent Hina.storage.clear()`, `indexedDB.deleteDatabase(name)`,
-  `Agent Hina.cookies.clear()`, `Agent Hina.fs.delete('data/x', {recursive: true})`.
+- From code, clear what you own: `localStorage.clear()`, `Hina.storage.clear()`, `indexedDB.deleteDatabase(name)`,
+  `Hina.cookies.clear()`, `Hina.fs.delete('data/x', {recursive: true})`.
 
 ## Limits and errors
 
-- Writes to `localStorage` and `Agent Hina.storage` are asynchronous on disk. They are safe across page reloads and
+- Writes to `localStorage` and `Hina.storage` are asynchronous on disk. They are safe across page reloads and
   normal app closes, but a write in the last moment before the process is killed can be lost. Keep critical data in
   IndexedDB (its transactions commit to SQLite before `complete` fires) or in files.
-- `localStorage`, `sessionStorage` and `Agent Hina.storage` are not available in workers. IndexedDB, files and cookies
+- `localStorage`, `sessionStorage` and `Hina.storage` are not available in workers. IndexedDB, files and cookies
   are.
-- `Agent Hina.cookies` rejects with `NotAllowedError` for hosts the app may not reach and with `TypeError` for an invalid
+- `Hina.cookies` rejects with `NotAllowedError` for hosts the app may not reach and with `TypeError` for an invalid
   or missing `url` or an `expires` it can't read.

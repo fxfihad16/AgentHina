@@ -23,7 +23,7 @@ only renders. Everything else is native and gated by permissions the user grants
 - No build step. Write plain HTML, CSS and JS. ES modules (`<script type="module">`) and relative imports work.
 - Each app is served at its own origin, `https://<slug>.hina.invalid/`, where the app folder is the root
   (`/style.css` is `my-app/style.css`).
-- The runtime injects `/_hina/sdk.js` at the top of `<head>` of every HTML page, so `window.Agent Hina` exists before
+- The runtime injects `/_hina/sdk.js` at the top of `<head>` of every HTML page, so `window.Hina` exists before
   your scripts run. Don't include it yourself.
 - Paths that aren't files and have no extension fall back to the entry page, so SPA routing works.
 
@@ -64,7 +64,7 @@ only renders. Everything else is native and gated by permissions the user grants
 
 An app can only use what it declares, and the user grants each declared permission (like Android). Undeclared or
 denied capabilities reject with a `DOMException` named `NotAllowedError`. The app's private `data/` folder,
-`localStorage`, `Agent Hina.storage`, IndexedDB and the native UI need no permission.
+`localStorage`, `Hina.storage`, IndexedDB and the native UI need no permission.
 
 | Name | Declaration | Gives |
 |---|---|---|
@@ -94,7 +94,7 @@ denied capabilities reject with a `DOMException` named `NotAllowedError`. The ap
 - Each folder is its own permission (`storage:<path>`): the user can allow some folders and not others. The access
   comes from the manifest only, the user just allows or denies it: `read` (read, list), `write` (create, change,
   delete; no reading), `readwrite`.
-- `pick`: the app may call `Agent Hina.fs.pickFolder()`; the user then chooses any folder in Agent Hina's file explorer and
+- `pick`: the app may call `Hina.fs.pickFolder()`; the user then chooses any folder in Agent Hina's file explorer and
   the app gets that access to it.
 - In the list form (`"permissions": ["storage"]`) storage is ignored: name the folders.
 - `"storage": true` (or `{"full": true, "access": "read"}`) asks for **all files**. That, a folder like `~/`, `/sdcard`,
@@ -110,14 +110,14 @@ Apps of one developer can share files, like Android apps with the same sharedUse
 permission prompt:
 
 ```js
-await Agent Hina.fs.write('app:com.you.notes/inbox/todo.txt', 'from Tasks');
-const list = await Agent Hina.fs.list('app:com.you.notes/inbox');
-const groups = (await Agent Hina.fs.folders()).filter(f => f.source === 'shared'); // [{path: 'app:com.you.notes', app: {id, name}}]
+await Hina.fs.write('app:com.you.notes/inbox/todo.txt', 'from Tasks');
+const list = await Hina.fs.list('app:com.you.notes/inbox');
+const groups = (await Hina.fs.folders()).filter(f => f.source === 'shared'); // [{path: 'app:com.you.notes', app: {id, name}}]
 ```
 
 - Installed apps share only with installed apps signed with the **same key**: a package whose `shared_id` group already
   has an app signed by another key is not installed. Development apps share only with other development apps.
-- Only the `data/` folder is shared (`Agent Hina.storage`, IndexedDB and cookies stay per app). Uninstalling an app deletes
+- Only the `data/` folder is shared (`Hina.storage`, IndexedDB and cookies stay per app). Uninstalling an app deletes
   its `data/` for the whole group.
 - The install screen and App info show which apps share data.
 
@@ -127,109 +127,109 @@ Widening a permission in the manifest (more hosts, ports or access) asks the use
 keeps the user's choice. Ignored or suspicious manifest entries are printed as warnings in the app's console.
 
 Ask for the least you need. Most apps need no network at all. States are `granted`, `denied` and `prompt`
-(the user hasn't decided yet: the first use or `Agent Hina.permissions.request()` shows a native prompt).
+(the user hasn't decided yet: the first use or `Hina.permissions.request()` shows a native prompt).
 
 ## The Agent Hina API
 
 ```js
-Agent Hina.app      // {id, name, version, origin}
-Agent Hina.page     // {id, path, params, root, background}: params = the query string as an object; root = the first page; background = a background task
-Agent Hina.ready    // Promise. Calls made earlier are queued, so awaiting is optional
-Agent Hina.theme    // {dark, colors: {primary: '#rrggbb', ...}}, also live CSS variables --ag-*
-Agent Hina.on(event, fn) / Agent Hina.off(event, fn)
+Hina.app      // {id, name, version, origin}
+Hina.page     // {id, path, params, root, background}: params = the query string as an object; root = the first page; background = a background task
+Hina.ready    // Promise. Calls made earlier are queued, so awaiting is optional
+Hina.theme    // {dark, colors: {primary: '#rrggbb', ...}}, also live CSS variables --ag-*
+Hina.on(event, fn) / Hina.off(event, fn)
 //   'theme' (theme changed) · 'resume' / 'pause' (page shown/hidden) · 'storage' ({key}: another page changed a key)
 //   'permission' ({name, state})
 
 // Key-value storage: synchronous, JSON values, native, shared by every page of the app
-Agent Hina.storage.get(key, fallback?) · set(key, value) · remove(key) · keys() · clear()
+Hina.storage.get(key, fallback?) · set(key, value) · remove(key) · keys() · clear()
 
 // Files: "data/..." = the app's private folder (always allowed); "~/..." or "/sdcard/..." need a granted storage folder
-await Agent Hina.fs.read(path, {encoding: 'utf8' | 'base64'}?)   // string
-await Agent Hina.fs.readJSON(path)
-await Agent Hina.fs.write(path, stringOrArrayBufferOrUint8ArrayOrBlob, {append}?)
-await Agent Hina.fs.writeJSON(path, value)
-await Agent Hina.fs.list(path)      // [{name, path, type: 'file' | 'dir', size, mtime}]
-await Agent Hina.fs.stat(path)      // {name, path, type, size, mtime} or null
-await Agent Hina.fs.exists(path)
-await Agent Hina.fs.mkdir(path) · delete(path, {recursive}?) · move(from, to)
-Agent Hina.fs.url(path)             // URL for <img>, <video> or fetch, streamed natively
-await Agent Hina.fs.pick({accept: 'image/*', multiple}?)   // native picker → [{name, path, size, type}], copied into data/imports/
-Agent Hina.fs.url(path, {thumb: 320}) // a native JPEG thumbnail (photos, HEIC, video frames), cached: use it for grids
-await Agent Hina.fs.pickFolder()        // Agent Hina's file explorer → {path, access} | null (needs "pick" in the manifest)
-await Agent Hina.fs.folders()           // [{path, access, source: "own" | "shared" | "manifest" | "picked"}]
-await Agent Hina.fs.forgetFolder(path?) // give back a picked folder
+await Hina.fs.read(path, {encoding: 'utf8' | 'base64'}?)   // string
+await Hina.fs.readJSON(path)
+await Hina.fs.write(path, stringOrArrayBufferOrUint8ArrayOrBlob, {append}?)
+await Hina.fs.writeJSON(path, value)
+await Hina.fs.list(path)      // [{name, path, type: 'file' | 'dir', size, mtime}]
+await Hina.fs.stat(path)      // {name, path, type, size, mtime} or null
+await Hina.fs.exists(path)
+await Hina.fs.mkdir(path) · delete(path, {recursive}?) · move(from, to)
+Hina.fs.url(path)             // URL for <img>, <video> or fetch, streamed natively
+await Hina.fs.pick({accept: 'image/*', multiple}?)   // native picker → [{name, path, size, type}], copied into data/imports/
+Hina.fs.url(path, {thumb: 320}) // a native JPEG thumbnail (photos, HEIC, video frames), cached: use it for grids
+await Hina.fs.pickFolder()        // Agent Hina's file explorer → {path, access} | null (needs "pick" in the manifest)
+await Hina.fs.folders()           // [{path, access, source: "own" | "shared" | "manifest" | "picked"}]
+await Hina.fs.forgetFolder(path?) // give back a picked folder
 
 // Permissions
-Agent Hina.permissions.all()            // {name: state} for every declared permission
-Agent Hina.permissions.query(name)      // 'granted' | 'denied' | 'prompt' | 'undeclared'
-await Agent Hina.permissions.request(name)   // shows the native prompt → 'granted' | 'denied' | 'undeclared'
+Hina.permissions.all()            // {name: state} for every declared permission
+Hina.permissions.query(name)      // 'granted' | 'denied' | 'prompt' | 'undeclared'
+await Hina.permissions.request(name)   // shows the native prompt → 'granted' | 'denied' | 'undeclared'
 
 // Native UI
-Agent Hina.ui.toast(text, {long}?)
-await Agent Hina.ui.alert(msg | {title, message, ok})
-await Agent Hina.ui.confirm(msg | {title, message, ok, cancel, destructive})   // boolean
-await Agent Hina.ui.prompt(msg | {title, message, value, placeholder, ok, cancel})   // string or null
-await Agent Hina.ui.sheet({title, items: [{id, label, icon?, destructive?}]})   // chosen id or null; icon = emoji
-await Agent Hina.ui.pickDate({value?: 'YYYY-MM-DD', title?})   // string or null
-await Agent Hina.ui.pickTime({value?: 'HH:MM'})                // string or null
-Agent Hina.ui.viewMedia({items, index})  // native full-screen photo/video viewer: swipe, pinch/double-tap zoom, system video
+Hina.ui.toast(text, {long}?)
+await Hina.ui.alert(msg | {title, message, ok})
+await Hina.ui.confirm(msg | {title, message, ok, cancel, destructive})   // boolean
+await Hina.ui.prompt(msg | {title, message, value, placeholder, ok, cancel})   // string or null
+await Hina.ui.sheet({title, items: [{id, label, icon?, destructive?}]})   // chosen id or null; icon = emoji
+await Hina.ui.pickDate({value?: 'YYYY-MM-DD', title?})   // string or null
+await Hina.ui.pickTime({value?: 'HH:MM'})                // string or null
+Hina.ui.viewMedia({items, index})  // native full-screen photo/video viewer: swipe, pinch/double-tap zoom, system video
                                      // player, share. items: paths, https URLs or {src, type: 'image'|'video', title} → {index}
-Agent Hina.ui.statusBar({color})        // any CSS color; icon contrast is automatic
+Hina.ui.statusBar({color})        // any CSS color; icon contrast is automatic
 
 // Device
-Agent Hina.device.haptic(kind)          // 'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error'
-await Agent Hina.device.share({title, text, url})
-await Agent Hina.device.copy(text)
-await Agent Hina.device.paste()         // needs `clipboard`
-Agent Hina.device.openUrl(url)          // opens in the system browser
-await Agent Hina.device.status()        // {network: {online, type, metered}, battery: {level, charging, saver}}
-Agent Hina.on('network', n => {}) · Agent Hina.on('battery', b => {})   // while the app is on screen, when they change
-await Agent Hina.device.info()          // {manufacturer, model, android, sdk, dark, locale}
+Hina.device.haptic(kind)          // 'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error'
+await Hina.device.share({title, text, url})
+await Hina.device.copy(text)
+await Hina.device.paste()         // needs `clipboard`
+Hina.device.openUrl(url)          // opens in the system browser
+await Hina.device.status()        // {network: {online, type, metered}, battery: {level, charging, saver}}
+Hina.on('network', n => {}) · Hina.on('battery', b => {})   // while the app is on screen, when they change
+await Hina.device.info()          // {manufacturer, model, android, sdk, dark, locale}
 
 // Notifications (need `notifications`): see "Notifications" below
-await Agent Hina.notify.show({id, title, body, ...})   // → {id}; same id updates in place
-await Agent Hina.notify.channel({id, name, importance, sound, vibrate, lights, badge})
-await Agent Hina.notify.active() · dismiss(id?) · deleteChannel(id)
-Agent Hina.on('notification', e => {})  // {id, action: "tap" | "dismiss" | <button id>, reply?, queued?}
+await Hina.notify.show({id, title, body, ...})   // → {id}; same id updates in place
+await Hina.notify.channel({id, name, importance, sound, vibrate, lights, badge})
+await Hina.notify.active() · dismiss(id?) · deleteChannel(id)
+Hina.on('notification', e => {})  // {id, action: "tap" | "dismiss" | <button id>, reply?, queued?}
 // Reminders: kept natively, they fire with the app closed and survive restarts and reboots. Same id = replaced.
-await Agent Hina.notify.schedule({id?, title, body, at?, delay?, repeat?, exact?, ...any notify.show option})   // → {id, at, repeat}
+await Hina.notify.schedule({id?, title, body, at?, delay?, repeat?, exact?, ...any notify.show option})   // → {id, at, repeat}
 //   at:     Date | epoch ms | "HH:MM" (next time of day) | "2026-12-24T18:00" (local)
 //   delay:  ms or "10m" / "2h" / "1d"
 //   repeat: "daily" | "weekly" | "weekdays" | "hourly" | "2h" | {every: "30m"} | {days: ["mon", "thu"], time?: "08:00"}
 //           plus optional until (Date/ms) and count (fire N times)
 //   exact:  default true (on time even in Doze); false lets Android batch it
-await Agent Hina.notify.list()          // scheduled reminders: [{id, title, body, repeat, at}]
-await Agent Hina.notify.cancel(id) · Agent Hina.notify.cancelAll()   // cancel reminders (and the shown notification)
+await Hina.notify.list()          // scheduled reminders: [{id, title, body, repeat, at}]
+await Hina.notify.cancel(id) · Hina.notify.cancelAll()   // cancel reminders (and the shown notification)
 
 // Cookies: each app has a permanent cookie jar, sent automatically (fetch credentials: 'omit' turns it off)
-await Agent Hina.cookies.list(url?)     // [{name, value, domain, path, expires, session, secure, httpOnly}]
-await Agent Hina.cookies.get(url, name)
-await Agent Hina.cookies.set({url, name, value, path?, domain?, expires?: Date|ms, maxAge?: s, secure?, httpOnly?})
-await Agent Hina.cookies.import(url, "a=1; b=2", {days?})   // a "Cookie:" header the user pasted (e.g. a login)
-await Agent Hina.cookies.delete({url?, name?, path?}) · Agent Hina.cookies.clear(url?)
+await Hina.cookies.list(url?)     // [{name, value, domain, path, expires, session, secure, httpOnly}]
+await Hina.cookies.get(url, name)
+await Hina.cookies.set({url, name, value, path?, domain?, expires?: Date|ms, maxAge?: s, secure?, httpOnly?})
+await Hina.cookies.import(url, "a=1; b=2", {days?})   // a "Cookie:" header the user pasted (e.g. a login)
+await Hina.cookies.delete({url?, name?, path?}) · Hina.cookies.clear(url?)
 
 // Background tasks (need `background` + the manifest's background script). See "Background tasks".
-await Agent Hina.background.register(name, {every: "1h"} | {delay: "10m"} | {at: "07:30", repeat: "daily"}, ...)
-await Agent Hina.background.list() · cancel(name?) · run(name)
-Agent Hina.background.on(name, async (task) => {...})   // in the background script
+await Hina.background.register(name, {every: "1h"} | {delay: "10m"} | {at: "07:30", repeat: "daily"}, ...)
+await Hina.background.list() · cancel(name?) · run(name)
+Hina.background.on(name, async (task) => {...})   // in the background script
 
 // Navigation: every page is a native screen (slide in, swipe or back to return)
-Agent Hina.nav.push(path, params?)      // path relative to the app root, e.g. nav.push('item.html', {id: 7})
-Agent Hina.nav.back()                   // close this page
-Agent Hina.nav.close()                  // close the whole app
-Agent Hina.onBack(fn)                   // fn() returns true if it handled back (close your own panel, go to the first tab)
+Hina.nav.push(path, params?)      // path relative to the app root, e.g. nav.push('item.html', {id: 7})
+Hina.nav.back()                   // close this page
+Hina.nav.close()                  // close the whole app
+Hina.onBack(fn)                   // fn() returns true if it handled back (close your own panel, go to the first tab)
 
 // Agent Hina MCP tools (need `mcp:<server>`)
-await Agent Hina.mcp.list(server)       // tools[]
-await Agent Hina.mcp.call(server, tool, args)
+await Hina.mcp.list(server)       // tools[]
+await Hina.mcp.call(server, tool, args)
 
 // Dev
-Agent Hina.dev.console()                // native console panel: every log and error, plus a JS input
-Agent Hina.dev.devtools()               // Eruda devtools: elements, network, storage
-Agent Hina.reload()
+Hina.dev.console()                // native console panel: every log and error, plus a JS input
+Hina.dev.devtools()               // Eruda devtools: elements, network, storage
+Hina.reload()
 
 // Threads (see "Threads" below)
-Agent Hina.thread.run(fn, args?) · map(items, fn) · pool(size) · cores
+Hina.thread.run(fn, args?) · map(items, fn) · pool(size) · cores
 ```
 
 ## Standard web APIs, routed natively
@@ -245,16 +245,16 @@ Write ordinary web code. These are handled natively behind the scenes:
   clearing the WebView's data.
 - **`indexedDB`** is native SQLite (the standard API, plus libraries like `idb`). Booleans are not valid IndexedDB
   keys, so index `0`/`1` instead.
-- **`alert()` / `confirm()` / `prompt()`** show native dialogs. In new code prefer `Agent Hina.ui.*` (async, with titles).
+- **`alert()` / `confirm()` / `prompt()`** show native dialogs. In new code prefer `Hina.ui.*` (async, with titles).
 - **`<input type="file">`** opens the native picker.
 - **`console.*`**, uncaught errors and unhandled rejections go to the native console panel and the log file.
 - **`new Worker(...)`** (classic, `{type: 'module'}` or a `blob:` URL) works too: the SDK is put into every worker, so
-  `fetch`, XHR, `WebSocket`, `EventSource`, `indexedDB` (the same databases as the page) and `Agent Hina.fs` / `mcp` /
+  `fetch`, XHR, `WebSocket`, `EventSource`, `indexedDB` (the same databases as the page) and `Hina.fs` / `mcp` /
   `notify` / `thread` work inside it, with the same permissions. `importScripts` and module `import` of your own files
   work. Not in workers: `localStorage` (no browser has it there) and the UI APIs. `SharedArrayBuffer` is not available
   (Android WebView doesn't support cross-origin isolation), so threads share data by messages, not memory.
 
-## Threads: `Agent Hina.thread`
+## Threads: `Hina.thread`
 
 Heavy work (parsing, image processing, search, math) goes on other CPU cores, so the UI never stutters. Each thread is
 a real OS thread with its own V8 engine; a pool sized to the phone (cores − 1) is started on first use and reused.
@@ -262,20 +262,20 @@ a real OS thread with its own V8 engine; a pool sized to the phone (cores − 1)
 ```js
 // Runs on another core. The function is copied to the thread as source code:
 // it can't use variables from outside it, so pass everything in as arguments.
-const sum = await Agent Hina.thread.run((a, b) => a + b, [2, 40]);
+const sum = await Hina.thread.run((a, b) => a + b, [2, 40]);
 
 // Spread a list over all cores; results come back in order
-const sizes = await Agent Hina.thread.map(urls, async (url) => (await (await fetch(url)).arrayBuffer()).byteLength);
+const sizes = await Hina.thread.map(urls, async (url) => (await (await fetch(url)).arrayBuffer()).byteLength);
 
 // Your own pool (e.g. 2 threads for background work); close it when done
-const pool = Agent Hina.thread.pool(2);
+const pool = Hina.thread.pool(2);
 await pool.run(fn, [args]);
 pool.close();
 
-Agent Hina.thread.cores   // number of CPU cores
+Hina.thread.cores   // number of CPU cores
 ```
 
-Inside a thread the function may be `async` and may use `fetch`, `indexedDB` and `Agent Hina.fs`. A thrown error rejects
+Inside a thread the function may be `async` and may use `fetch`, `indexedDB` and `Hina.fs`. A thrown error rejects
 the promise with the same name and message. Arguments and results are copied (structured clone); an `ArrayBuffer` or
 typed array returned is moved without copying. For a long-running thread with its own message protocol, use a normal
 `new Worker('worker.js')`.
@@ -284,11 +284,11 @@ typed array returned is moved without copying. For a long-running thread with it
 
 ```js
 // send: the user picks the app (mini apps that accept it, or "Other apps…" = Android's share sheet)
-await Agent Hina.intent.send({ action: 'share', path: '/sdcard/DCIM/x.jpg', title: 'Sunset' });   // → {to}
-await Agent Hina.intent.send({ action: 'share', text: 'Hello', url: 'https://example.com' });
+await Hina.intent.send({ action: 'share', path: '/sdcard/DCIM/x.jpg', title: 'Sunset' });   // → {to}
+await Hina.intent.send({ action: 'share', text: 'Hello', url: 'https://example.com' });
 // receive (declare "intents" in the manifest)
-Agent Hina.on('intent', (it) => { /* {action, type, text?, url?, path?, title?, data?, from: {id, name}} */ });
-Agent Hina.intent.current   // the last one received
+Hina.on('intent', (it) => { /* {action, type, text?, url?, path?, title?, data?, from: {id, name}} */ });
+Hina.intent.current   // the last one received
 ```
 A file goes along as a one-day read grant for that file only: copy it into your `data/` if you keep it. Android's
 share sheet has "Mini app" too: what's shared there arrives the same way (files copied into `data/inbox/`).
@@ -299,14 +299,14 @@ Links `hina-miniapp://app/<id>/<path>?a=1` open the app and arrive as `{action: 
 Native Android notifications, as an installed app has them. The same `id` updates a notification in place.
 
 ```js
-await Agent Hina.notify.channel({ id: 'timer', name: 'Running timer', importance: 'low', sound: false });
-await Agent Hina.notify.show({
+await Hina.notify.channel({ id: 'timer', name: 'Running timer', importance: 'low', sound: false });
+await Hina.notify.show({
   id: 'timer', channel: 'timer', ongoing: true, color: '#C62828',
   title: 'Focus', body: 'Ends at 14:25',
   countdown: endTime,                        // the system ticks it: no updates needed
   actions: [{ id: 'pause', title: 'Pause', open: false }, { id: 'skip', title: 'Skip', open: false }],
 });
-Agent Hina.on('notification', (e) => { if (e.action === 'pause') pause(); });
+Hina.on('notification', (e) => { if (e.action === 'pause') pause(); });
 ```
 
 | Option | Meaning |
@@ -331,7 +331,7 @@ Agent Hina.on('notification', (e) => { if (e.action === 'pause') pause(); });
 | `group`, `groupSummary` | Bundle the app's notifications together. Without a group each notification stands alone (never mixed with other apps') |
 | `number` | Badge count |
 | `timeout` | Remove after this many ms |
-| `actions` | Up to 3 buttons `{id, title, open?, reply?}`. `open: false` doesn't open the app: the event goes to the app if it is on screen, else to its background script (`Agent Hina.background.on('notification', task => task.data)`), else when it opens. `reply: {placeholder}` adds a text box; the text comes as `e.reply` |
+| `actions` | Up to 3 buttons `{id, title, open?, reply?}`. `open: false` doesn't open the app: the event goes to the app if it is on screen, else to its background script (`Hina.background.on('notification', task => task.data)`), else when it opens. `reply: {placeholder}` adds a text box; the text comes as `e.reply` |
 | `tapAction` | Event action for a tap on the notification (default `"tap"`); a tap opens the app |
 
 Events: `{id, action, reply?, queued?}`. `action` is `"tap"`, `"dismiss"` (swiped away) or a button id. `queued: true`
@@ -346,16 +346,16 @@ Like a native app, a mini app can do work while it is closed: check something on
 2. In `background.js` (it runs in an invisible page with the full SDK: fetch, IndexedDB, localStorage, files,
    cookies, notifications; no UI, no dialogs):
    ```js
-   Agent Hina.background.on('sync', async (task) => {      // task: {name, reason: "schedule"|"alarm"|"manual", runId}
+   Hina.background.on('sync', async (task) => {      // task: {name, reason: "schedule"|"alarm"|"manual", runId}
      const items = await (await fetch('https://api.example.com/new')).json();
-     if (items.length) await Agent Hina.notify.show({ title: `${items.length} new`, tag: 'sync' });
+     if (items.length) await Hina.notify.show({ title: `${items.length} new`, tag: 'sync' });
    });
    ```
 3. From the app (calling it on every start is fine, the schedule is kept):
    ```js
-   await Agent Hina.permissions.request('background');
-   await Agent Hina.background.register('sync', { every: '1h', network: 'any' });   // flexible, battery friendly
-   await Agent Hina.background.register('digest', { at: '07:30', repeat: 'daily' }); // exact time
+   await Hina.permissions.request('background');
+   await Hina.background.register('sync', { every: '1h', network: 'any' });   // flexible, battery friendly
+   await Hina.background.register('digest', { at: '07:30', repeat: 'daily' }); // exact time
    ```
    Options: `every` (≥ 15 min, periodic), `delay` (once), `at` + `repeat` (exact, same rules as reminders), and for
    `every`/`delay`: `network` (`"any"` or `"unmetered"`), `charging`, `batteryNotLow`.
@@ -446,8 +446,8 @@ color in kit components, set `--ag-accent` and `--ag-on-accent`.
 - **Hot reload:** saving any file in the app folder reloads every open page of the app within about 100 ms. Edits to
   only `.css` files hot-swap the stylesheets without a reload, so state is kept. Storage persists across reloads.
 - **Logs:** `~/.hina/mini-apps/<app id>/console.log` (`tail -f` it while testing), or the native console
-  (`Agent Hina.dev.console()`).
-- **Data:** `~/.hina/mini-apps/<app id>/` holds `kv.db` (localStorage + Agent Hina.storage, SQLite), `idb.db`
+  (`Hina.dev.console()`).
+- **Data:** `~/.hina/mini-apps/<app id>/` holds `kv.db` (localStorage + Hina.storage, SQLite), `idb.db`
   (IndexedDB), `cookies.db` (the cookie jar) and `files/` (the app's `data/` folder). Reminders and background tasks
   are kept by Agent Hina itself (not in this folder) and survive reboots.
 
@@ -457,10 +457,10 @@ color in kit components, set `--ag-accent` and `--ag-on-accent`.
    small libraries into the app folder instead.
 2. **Use the theme variables** (or the UI kit) for every color, so the app matches Agent Hina in light and dark.
    Never hard-code white or black backgrounds.
-3. **Use `Agent Hina.ui`** for dialogs, sheets, pickers and toasts, and `Agent Hina.device.haptic` on important taps.
+3. **Use `Hina.ui`** for dialogs, sheets, pickers and toasts, and `Hina.device.haptic` on important taps.
    That's what makes it feel native.
-4. **Handle back:** register `Agent Hina.onBack` to close in-page panels and to return to the first tab before the app
+4. **Handle back:** register `Hina.onBack` to close in-page panels and to return to the first tab before the app
    closes.
 5. **Declare the fewest permissions,** and handle `NotAllowedError` with a friendly message.
-6. **Test with `Agent Hina.dev.console()`** or the log file. Fix every error before calling the app done.
+6. **Test with `Hina.dev.console()`** or the log file. Fix every error before calling the app done.
 7. **Keep `id` stable;** bump `version` when you change the app.

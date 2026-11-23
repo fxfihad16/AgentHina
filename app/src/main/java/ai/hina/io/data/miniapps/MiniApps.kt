@@ -31,7 +31,7 @@ data class MiniApp(
     val permissions: Map<String, JSONObject>,
     /** Permissions without which the app doesn't open at all (manifest "required_permissions", expanded). */
     val required: Set<String> = emptySet(),
-    /** Access ("read" | "write" | "readwrite") for folders the user picks at runtime (Agent Hina.fs.pickFolder); null = not allowed. */
+    /** Access ("read" | "write" | "readwrite") for folders the user picks at runtime (Hina.fs.pickFolder); null = not allowed. */
     val storagePick: String? = null,
     /** What other apps may send it: [action → mime patterns], from the manifest's "intents". */
     val intents: List<Pair<String, List<String>>> = emptyList(),

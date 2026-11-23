@@ -546,7 +546,7 @@ class MiniAppPage(private val host: MiniAppHost, app: MiniApp, override val path
         else -> throw MiniAppError("NotSupportedError", "Unknown method $m")
     }
 
-    /** ops: [{a: "l" (localStorage) | "s" (Agent Hina.storage) | "ss" (sessionStorage), op: set|del|clear, k, v}] */
+    /** ops: [{a: "l" (localStorage) | "s" (Hina.storage) | "ss" (sessionStorage), op: set|del|clear, k, v}] */
     private fun kv(p: JSONObject) {
         val ops = p.optJSONArray("ops") ?: return
         val shared = JSONArray()
@@ -571,7 +571,7 @@ class MiniAppPage(private val host: MiniAppHost, app: MiniApp, override val path
     }
 
     /**
-     * Agent Hina.intent.send: the user picks which app gets it (mini apps that declared they accept it, or Android's
+     * Hina.intent.send: the user picks which app gets it (mini apps that declared they accept it, or Android's
      * own share sheet). A file goes along as a one-day read grant for that file only.
      */
     private suspend fun sendIntent(p: JSONObject): Any? {
@@ -611,7 +611,7 @@ class MiniAppPage(private val host: MiniAppHost, app: MiniApp, override val path
         return JSONObject().put("to", target.id)
     }
 
-    /** Items for the native viewer: paths are permission-checked like Agent Hina.fs, URLs like the network layer. */
+    /** Items for the native viewer: paths are permission-checked like Hina.fs, URLs like the network layer. */
     private fun mediaItems(a: JSONArray): List<MediaItem> = (0 until minOf(a.length(), 5000)).mapNotNull { i ->
         val o = a.opt(i)
         val src = (if (o is JSONObject) o.optString("src") else o?.toString()).orEmpty().trim()
@@ -642,7 +642,7 @@ class MiniAppPage(private val host: MiniAppHost, app: MiniApp, override val path
         }
     }
 
-    /** Agent Hina.fs.pickFolder: the user chooses a folder in Agent Hina's file explorer; the app gets the manifest's "pick" access to it. */
+    /** Hina.fs.pickFolder: the user chooses a folder in Agent Hina's file explorer; the app gets the manifest's "pick" access to it. */
     private suspend fun pickFolder(): Any? {
         val access = app.storagePick ?: throw MiniAppError("NotAllowedError", "The manifest doesn't allow picking folders (permissions.storage.pick)")
         val folder = host.pickFolder("Choose a folder for ${app.name}") ?: return JSONObject.NULL
@@ -728,7 +728,7 @@ class MiniAppPage(private val host: MiniAppHost, app: MiniApp, override val path
     }
 
     /**
-     * Agent Hina.mcp: only what the manifest declared and the user allowed (the whole server, its read-only tools, or
+     * Hina.mcp: only what the manifest declared and the user allowed (the whole server, its read-only tools, or
      * single tools), and, where asked for, the user's OK before each call.
      */
     private suspend fun mcp(m: String, p: JSONObject): Any? {

@@ -1,6 +1,6 @@
 # API reference
 
-Every page of a mini app gets the SDK before any of its own scripts run, so `window.Agent Hina` always exists. This page
+Every page of a mini app gets the SDK before any of its own scripts run, so `window.Hina` always exists. This page
 lists every member of `Agent Hina`, every event you can listen to, and the standard web APIs the SDK replaces with
 native ones. Each entry links to the page that explains it. Permission names refer to the manifest's `permissions`
 object (see [permissions](permissions.md)).
@@ -11,7 +11,7 @@ object (see [permissions](permissions.md)).
 |---|---|
 | A page (`index.html`, pushed pages) | The full `Agent Hina` object below |
 | The background page (the manifest's `background` script) | The full object, but anything that needs the screen rejects with `NotSupportedError`. See [background](background.md) |
-| A Web Worker or an `Agent Hina.thread` thread | A smaller `Agent Hina` (see [In workers](#in-workers)). See [threads](threads.md) |
+| A Web Worker or an `Hina.thread` thread | A smaller `Agent Hina` (see [In workers](#in-workers)). See [threads](threads.md) |
 
 All methods that return a Promise reject with a `DOMException` whose `name` tells what went wrong (see
 [Error names](#error-names)). Methods marked "no Promise" return nothing and never throw; their errors only appear in
@@ -21,39 +21,39 @@ the console log.
 
 | Member | Type | Meaning | Page |
 |---|---|---|---|
-| `Agent Hina.sdk` | number | SDK version, currently `1` | |
-| `Agent Hina.app` | object (frozen) | `{id, name, version, origin}` of this app | [getting started](getting-started.md) |
-| `Agent Hina.page` | object (frozen) | `{id, path, params, root, background}` of this page. `params` = the page's query string as an object (values are strings). `root` is `true` on the first page, `false` on pushed pages. `background` is `true` in the background page | [ui](ui.md#pages-and-navigation) |
-| `Agent Hina.ready` | Promise | Resolves once the native side has answered. You don't need to await it before calling APIs | |
-| `Agent Hina.theme` | object | `{dark, colors, appColor}`, updated on every `theme` event | [ui](ui.md#theme-and-dark-mode) |
-| `Agent Hina.on(event, fn)` | function | Listens to one of the [events](#events). Unknown event names are ignored | |
-| `Agent Hina.off(event, fn)` | function | Removes a listener | |
-| `Agent Hina.onBack(fn)` | function → function | Adds a back handler. `fn()` returns `true` (synchronously) when it handled back. Returns a function that removes the handler | [ui](ui.md#back-button) |
-| `Agent Hina.reload()` | no Promise | Reloads this page | |
-| `Agent Hina.storage` | namespace | Key-value storage with JSON values | [storage](storage.md#hinastorage) |
-| `Agent Hina.fs` | namespace | Files | [files](files.md) |
-| `Agent Hina.permissions` | namespace | Permission states and prompts | [permissions](permissions.md) |
-| `Agent Hina.ui` | namespace | Native dialogs, toasts, media viewer, status bar | [ui](ui.md) |
-| `Agent Hina.device` | namespace | Haptics, clipboard, share, links, device info and status | [ui](ui.md#device-helpers), [intents](intents.md#device-status) |
-| `Agent Hina.notify` | namespace | Notifications and reminders | [notifications](notifications.md) |
-| `Agent Hina.nav` | namespace | Native pages | [ui](ui.md#pages-and-navigation) |
-| `Agent Hina.cookies` | namespace | The app's cookie jar | [storage](storage.md#cookies) |
-| `Agent Hina.background` | namespace | Background tasks | [background](background.md) |
-| `Agent Hina.intent` | namespace | Share / open with other apps | [intents](intents.md) |
-| `Agent Hina.mcp` | namespace | Call Agent Hina's MCP tool servers | [mcp](mcp.md) |
-| `Agent Hina.dev` | namespace | Developer tools | [troubleshooting](troubleshooting.md) |
-| `Agent Hina.thread` | namespace | Run functions on other CPU cores | [threads](threads.md) |
+| `Hina.sdk` | number | SDK version, currently `1` | |
+| `Hina.app` | object (frozen) | `{id, name, version, origin}` of this app | [getting started](getting-started.md) |
+| `Hina.page` | object (frozen) | `{id, path, params, root, background}` of this page. `params` = the page's query string as an object (values are strings). `root` is `true` on the first page, `false` on pushed pages. `background` is `true` in the background page | [ui](ui.md#pages-and-navigation) |
+| `Hina.ready` | Promise | Resolves once the native side has answered. You don't need to await it before calling APIs | |
+| `Hina.theme` | object | `{dark, colors, appColor}`, updated on every `theme` event | [ui](ui.md#theme-and-dark-mode) |
+| `Hina.on(event, fn)` | function | Listens to one of the [events](#events). Unknown event names are ignored | |
+| `Hina.off(event, fn)` | function | Removes a listener | |
+| `Hina.onBack(fn)` | function → function | Adds a back handler. `fn()` returns `true` (synchronously) when it handled back. Returns a function that removes the handler | [ui](ui.md#back-button) |
+| `Hina.reload()` | no Promise | Reloads this page | |
+| `Hina.storage` | namespace | Key-value storage with JSON values | [storage](storage.md#hinastorage) |
+| `Hina.fs` | namespace | Files | [files](files.md) |
+| `Hina.permissions` | namespace | Permission states and prompts | [permissions](permissions.md) |
+| `Hina.ui` | namespace | Native dialogs, toasts, media viewer, status bar | [ui](ui.md) |
+| `Hina.device` | namespace | Haptics, clipboard, share, links, device info and status | [ui](ui.md#device-helpers), [intents](intents.md#device-status) |
+| `Hina.notify` | namespace | Notifications and reminders | [notifications](notifications.md) |
+| `Hina.nav` | namespace | Native pages | [ui](ui.md#pages-and-navigation) |
+| `Hina.cookies` | namespace | The app's cookie jar | [storage](storage.md#cookies) |
+| `Hina.background` | namespace | Background tasks | [background](background.md) |
+| `Hina.intent` | namespace | Share / open with other apps | [intents](intents.md) |
+| `Hina.mcp` | namespace | Call Agent Hina's MCP tool servers | [mcp](mcp.md) |
+| `Hina.dev` | namespace | Developer tools | [troubleshooting](troubleshooting.md) |
+| `Hina.thread` | namespace | Run functions on other CPU cores | [threads](threads.md) |
 
 ## Events
 
-Listen with `Agent Hina.on(name, fn)`. Only these names are accepted.
+Listen with `Hina.on(name, fn)`. Only these names are accepted.
 
 | Event | Data | When | Page |
 |---|---|---|---|
 | `theme` | `{dark, colors, appColor}` | Agent Hina's theme or light/dark mode changed | [ui](ui.md#theme-and-dark-mode) |
 | `resume` | `null` | This page came back on screen after a `pause` (another app, Home, the lock screen, back from a pushed page). Not sent on the first open | [intents](intents.md#lifecycle-events) |
 | `pause` | `null` | This page's screen left the front | [intents](intents.md#lifecycle-events) |
-| `storage` | `{key}` (`key` is `null` after `clear()`) | Another page of the app changed `Agent Hina.storage`. Changes to `localStorage` fire the standard `window` `storage` event instead | [storage](storage.md) |
+| `storage` | `{key}` (`key` is `null` after `clear()`) | Another page of the app changed `Hina.storage`. Changes to `localStorage` fire the standard `window` `storage` event instead | [storage](storage.md) |
 | `permission` | `{name, state}` | A permission's state changed | [permissions](permissions.md) |
 | `notification` | `{id, action, reply?, queued?}` | A tap, button, inline reply or swipe-away on one of the app's notifications | [notifications](notifications.md#events) |
 | `intent` | `{action, type?, text?, url?, path?, title?, data?, params?, from}` | Another app, Android's share sheet or a link sent something to this app | [intents](intents.md#receiving) |
@@ -61,11 +61,11 @@ Listen with `Agent Hina.on(name, fn)`. Only these names are accepted.
 | `battery` | `{level, charging, saver}` | Battery state changed while the page is on screen | [intents](intents.md#device-status) |
 
 ```js
-Agent Hina.on('theme', (t) => console.log('dark mode:', t.dark));
-Agent Hina.on('notification', (e) => { if (e.action === 'pause') pauseTimer(); });
+Hina.on('theme', (t) => console.log('dark mode:', t.dark));
+Hina.on('notification', (e) => { if (e.action === 'pause') pauseTimer(); });
 ```
 
-## Agent Hina.storage
+## Hina.storage
 
 Synchronous. Values are stored as JSON. No permission needed. See [storage](storage.md#hinastorage).
 
@@ -74,10 +74,10 @@ Synchronous. Values are stored as JSON. No permission needed. See [storage](stor
 | `get(key, fallback?)` | value | The stored value (parsed from JSON), or `fallback` when the key is missing |
 | `set(key, value)` | `undefined` | Stores `JSON.stringify(value)` (`undefined` is stored as `null`) |
 | `remove(key)` | `undefined` | Deletes a key |
-| `keys()` | `string[]` | All keys of `Agent Hina.storage` (not `localStorage`'s) |
-| `clear()` | `undefined` | Deletes every `Agent Hina.storage` key |
+| `keys()` | `string[]` | All keys of `Hina.storage` (not `localStorage`'s) |
+| `clear()` | `undefined` | Deletes every `Hina.storage` key |
 
-## Agent Hina.fs
+## Hina.fs
 
 Paths: `data/…` (own folder), `app:<id>/…` (shared group), `~/…`, or an absolute path. See [files](files.md).
 
@@ -99,7 +99,7 @@ Paths: `data/…` (own folder), `app:<id>/…` (shared group), `~/…`, or an ab
 | `folders()` | `Promise<[{path, access, source, app?}]>` | none |
 | `forgetFolder(path?)` | `Promise<void>` | none |
 
-## Agent Hina.permissions
+## Hina.permissions
 
 See [permissions](permissions.md).
 
@@ -114,7 +114,7 @@ Permission names: `network`, `localhost`, `notifications`, `background`, `clipbo
 declared folder that isn't granted yet. `query('storage')` (pages and workers) is `granted` only when every declared
 folder is granted, `prompt` while any is undecided, otherwise `denied`.
 
-## Agent Hina.ui
+## Hina.ui
 
 Not available in the background page (rejects with `NotSupportedError`, `toast` and `statusBar` do nothing). See
 [ui](ui.md).
@@ -131,7 +131,7 @@ Not available in the background page (rejects with `NotSupportedError`, `toast` 
 | `viewMedia(items \| {items, index?})` | `Promise<{index}>` | Native photo/video viewer; resolves when closed with the last index shown |
 | `statusBar({color?})` | no Promise | Status bar color (a CSS color value, `var(--name)` too); no color, or a value that isn't a color = back to the default |
 
-## Agent Hina.device
+## Hina.device
 
 See [ui](ui.md#device-helpers) and [intents](intents.md#device-status).
 
@@ -145,7 +145,7 @@ See [ui](ui.md#device-helpers) and [intents](intents.md#device-status).
 | `info()` | `Promise<{manufacturer, model, android, sdk, dark, locale}>` | none | Device facts |
 | `status()` | `Promise<{network: {online, type, metered}, battery: {level, charging, saver}}>` | none | Connectivity and battery now |
 
-## Agent Hina.notify
+## Hina.notify
 
 See [notifications](notifications.md).
 
@@ -161,7 +161,7 @@ See [notifications](notifications.md).
 | `cancel(id)` | `Promise<void>` (cancels the reminder and removes its notification) | none |
 | `cancelAll()` | `Promise<void>` | none |
 
-## Agent Hina.nav
+## Hina.nav
 
 See [ui](ui.md#pages-and-navigation). All three return nothing.
 
@@ -171,7 +171,7 @@ See [ui](ui.md#pages-and-navigation). All three return nothing.
 | `back()` | Closes this page. On the root page, sends the app to the background |
 | `close()` | Closes the whole app (all its pages) |
 
-## Agent Hina.cookies
+## Hina.cookies
 
 Only for hosts the app may reach. See [storage](storage.md#cookies).
 
@@ -184,7 +184,7 @@ Only for hosts the app may reach. See [storage](storage.md#cookies).
 | `delete({url?, name?, path?})` | `Promise<number>`: how many were removed |
 | `clear(url?)` | `Promise<number>` |
 
-## Agent Hina.background
+## Hina.background
 
 See [background](background.md).
 
@@ -197,7 +197,7 @@ See [background](background.md).
 | `run(name)` | `Promise<void>`: runs the task now | `background` |
 | `on(name, fn)` | `undefined`: in the background script, the handler for task `name` (`'*'` = any) | |
 
-## Agent Hina.intent
+## Hina.intent
 
 See [intents](intents.md).
 
@@ -206,7 +206,7 @@ See [intents](intents.md).
 | `send({action?, type?, text?, url?, path?, title?, data?})` | `Promise<{to} \| null>`: `to` is the receiving app's id or `'android'`; `null` when the user cancelled |
 | `current` | The last `intent` event this page received, or `null` |
 
-## Agent Hina.mcp
+## Hina.mcp
 
 Needs `mcp:<server>` for each server. See [mcp](mcp.md).
 
@@ -215,7 +215,7 @@ Needs `mcp:<server>` for each server. See [mcp](mcp.md).
 | `list(server)` | `Promise<tool[]>` |
 | `call(server, tool, args?)` | `Promise<result>` (the MCP `tools/call` result) |
 
-## Agent Hina.dev
+## Hina.dev
 
 Both return nothing. See [troubleshooting](troubleshooting.md).
 
@@ -224,7 +224,7 @@ Both return nothing. See [troubleshooting](troubleshooting.md).
 | `console()` | Opens the native console panel (logs, errors, a JS input) |
 | `devtools()` | Opens Eruda DevTools in this page |
 
-## Agent Hina.thread
+## Hina.thread
 
 See [threads](threads.md).
 
@@ -237,7 +237,7 @@ See [threads](threads.md).
 
 ## In workers
 
-Inside a Web Worker or an `Agent Hina.thread` thread, `Agent Hina` has only these members. `Agent Hina.worker` is `true` there.
+Inside a Web Worker or an `Hina.thread` thread, `Agent Hina` has only these members. `Hina.worker` is `true` there.
 
 | Member | Methods |
 |---|---|

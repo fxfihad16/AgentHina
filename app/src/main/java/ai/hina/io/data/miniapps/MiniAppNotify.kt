@@ -197,7 +197,7 @@ object MiniAppNotify {
         val ongoing = p.optBoolean("ongoing")
         val silent = p.optBoolean("silent")
         val channel = p.optString("channel").takeIf { it.isNotBlank() }?.let { c ->
-            channelId(app.id, c).also { if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(it) == null) throw MiniAppError("NotFoundError", "No channel \"$c\": create it with Agent Hina.notify.channel()") }
+            channelId(app.id, c).also { if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(it) == null) throw MiniAppError("NotFoundError", "No channel \"$c\": create it with Hina.notify.channel()") }
         } ?: when { silent -> CHANNEL_STATUS; ongoing -> CHANNEL_ONGOING; else -> CHANNEL_ALERTS }
         val title = p.optString("title").take(200)
         val body = p.optString("body").take(4000)

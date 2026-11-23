@@ -1,7 +1,7 @@
-# MCP tools: Agent Hina.mcp
+# MCP tools: Hina.mcp
 
 Agent Hina has built-in MCP tool servers (notes, themes, the browser, the terminal, Android automation, …) that its AI
-agents use. A mini app can call the same tools with `Agent Hina.mcp`, for example to read and create notes in Agent Hina's
+agents use. A mini app can call the same tools with `Hina.mcp`, for example to read and create notes in Agent Hina's
 Notes, or to switch the theme. Each server is its own permission, declared in the manifest and granted by the user.
 Calls run inside Agent Hina (no network, no local port).
 
@@ -39,14 +39,14 @@ parts of your phone"). Ask only for what the app needs.
 
 | Method | Returns | Meaning |
 |---|---|---|
-| `Agent Hina.mcp.list(server)` | `Promise<tool[]>` | The server's tools: `[{name, description, inputSchema, …}]` as in MCP `tools/list` |
-| `Agent Hina.mcp.call(server, tool, args?)` | `Promise<result>` | Calls one tool with `args` (an object, default `{}`). Resolves with the MCP `tools/call` result, usually `{content: [{type: 'text', text}], isError?}` |
+| `Hina.mcp.list(server)` | `Promise<tool[]>` | The server's tools: `[{name, description, inputSchema, …}]` as in MCP `tools/list` |
+| `Hina.mcp.call(server, tool, args?)` | `Promise<result>` | Calls one tool with `args` (an object, default `{}`). Resolves with the MCP `tools/call` result, usually `{content: [{type: 'text', text}], isError?}` |
 
 ```js
-const tools = await Agent Hina.mcp.list('notes_mcp');
+const tools = await Hina.mcp.list('notes_mcp');
 console.log(tools.map((t) => t.name));   // ['notes_list', 'notes_get', 'notes_create', …]
 
-const r = await Agent Hina.mcp.call('notes_mcp', 'notes_create', { title: 'Groceries', items: ['Milk', 'Eggs'] });
+const r = await Hina.mcp.call('notes_mcp', 'notes_create', { title: 'Groceries', items: ['Milk', 'Eggs'] });
 const text = (r.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('\n');
 if (r.isError) throw new Error(text);
 ```
@@ -69,7 +69,7 @@ if (r.isError) throw new Error(text);
 Request the permission first, and handle a denial:
 
 ```js
-if (await Agent Hina.permissions.request('mcp:notes_mcp') !== 'granted') {
-  Agent Hina.ui.toast('Allow "Agent Hina tools: notes_mcp" to sync with Notes');
+if (await Hina.permissions.request('mcp:notes_mcp') !== 'granted') {
+  Hina.ui.toast('Allow "Agent Hina tools: notes_mcp" to sync with Notes');
 }
 ```

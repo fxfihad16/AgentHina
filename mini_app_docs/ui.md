@@ -10,7 +10,7 @@ device helpers (haptics, clipboard, share, links, camera).
 
 The runtime adds, before your own code:
 
-- the SDK script (`window.Agent Hina`) at the top of `<head>`,
+- the SDK script (`window.Hina`) at the top of `<head>`,
 - a viewport tag when the page has none (`width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no,
   viewport-fit=cover`); pinch zoom of the page is off,
 - a tiny base style: no tap highlight, no text auto-sizing, no overscroll glow, no long-press callout or image dragging,
@@ -66,7 +66,7 @@ inputs and `.ag-selectable`, and honors `prefers-reduced-motion`.
 | Text fields | `ag-field` > `ag-input` / `ag-textarea` + `ag-label`, `ag-helper` | Floating label: give the input `placeholder=" "` and put the `label` after it |
 | Controls | `input.ag-switch`, `input.ag-checkbox` (`ag-round` for a round one), `ag-segmented` (children selected with `is-selected`, `aria-pressed` or `aria-selected`) | Use on `<input type="checkbox">` |
 | Bottom navigation | `ag-navbar` > `ag-navbar-item` (`is-active` or `aria-selected="true"`) > `ag-navbar-icon` + `ag-navbar-label` | Fixed at the bottom |
-| In-page sheet | `ag-scrim` + `ag-sheet`, toggle `is-open` on both | For custom sheets; `Agent Hina.ui.sheet` is the native one |
+| In-page sheet | `ag-scrim` + `ag-sheet`, toggle `is-open` on both | For custom sheets; `Hina.ui.sheet` is the native one |
 | Feedback | `ag-empty` (`ag-empty-icon`, `ag-empty-title`, `p`), `ag-progress` > `ag-progress-bar` (`style="--value: 40%"`), `ag-progress ag-indeterminate`, `ag-spinner` | |
 | Motion | `ag-enter` (slide up and fade in), `ag-fade` | |
 | Press effect | `ag-clickable` | Adds the press overlay to any element |
@@ -101,12 +101,12 @@ between light and dark.
   `--ag-surface-container`, `--ag-surface-container-high`, `--ag-surface-container-highest`, `--ag-outline`, `--ag-outline-variant`, `--ag-error`, `--ag-on-error`, `--ag-error-container`,
   `--ag-on-error-container`, `--ag-inverse-surface`, `--ag-inverse-on-surface`, `--ag-inverse-primary`. Agent Hina's own
   tokens are there too, for example `--ag-success`, `--ag-warning`, `--ag-danger`, `--ag-info`,
-  `--ag-success-container`, `--ag-card`, `--ag-border`, `--ag-code-bg`. Read `Agent Hina.theme.colors` for the full list.
+  `--ag-success-container`, `--ag-card`, `--ag-border`, `--ag-code-bg`. Read `Hina.theme.colors` for the full list.
 - `--ag-app-color`: the manifest's `theme_color`, or the theme's background when there is none.
 - `html[data-theme="dark"]` or `html[data-theme="light"]`, and `color-scheme` on `:root`.
 - `@media (prefers-color-scheme: dark)` matches Agent Hina's mode, not just the system's.
-- `Agent Hina.theme`: `{dark, colors, appColor}`. Colors are `#rrggbb`, or `rgba(r, g, b, a)` when transparent.
-- `Agent Hina.on('theme', t => …)` fires after the variables changed, for anything drawn in JavaScript (canvas charts).
+- `Hina.theme`: `{dark, colors, appColor}`. Colors are `#rrggbb`, or `rgba(r, g, b, a)` when transparent.
+- `Hina.on('theme', t => …)` fires after the variables changed, for anything drawn in JavaScript (canvas charts).
 
 ```css
 body { background: var(--ag-background); color: var(--ag-on-background); }
@@ -114,8 +114,8 @@ body { background: var(--ag-background); color: var(--ag-on-background); }
 ```
 
 ```js
-function drawChart() { chart.setColors(Agent Hina.theme.colors.primary, Agent Hina.theme.colors.on_surface); }
-Agent Hina.on('theme', drawChart);
+function drawChart() { chart.setColors(Hina.theme.colors.primary, Hina.theme.colors.on_surface); }
+Hina.on('theme', drawChart);
 ```
 
 Never hard-code white or black backgrounds: use the variables so the app works in both modes.
@@ -126,18 +126,18 @@ Never hard-code white or black backgrounds: use the variables so the app works i
   they use the theme's background. See [manifest](manifest.md).
 - The status bar and navigation bar are opaque (the page is not drawn behind them), so the keyboard resizes the page
   natively. The navigation bar always uses the theme's background.
-- `Agent Hina.ui.statusBar({color})` changes the status bar of the current page's screen. `color` is a CSS color value
+- `Hina.ui.statusBar({color})` changes the status bar of the current page's screen. `color` is a CSS color value
   (`#hex`, `rgb()`, `hsl()`, a color name, or `var(--name)` / `var(--name, fallback)`, read from the page's CSS
   variables); transparency is dropped. A value that isn't a color resets the bar to the default color. The icons
   switch between light and dark automatically. Call it without a color to go back to the default. A pushed page
   starts with the default color.
 
 ```js
-Agent Hina.ui.statusBar({ color: '#C62828' });
+Hina.ui.statusBar({ color: '#C62828' });
 
-Agent Hina.ui.statusBar({ color: 'var(--ag-primary)' });
+Hina.ui.statusBar({ color: 'var(--ag-primary)' });
 
-Agent Hina.ui.statusBar();   // back to theme_color / theme background
+Hina.ui.statusBar();   // back to theme_color / theme background
 ```
 
 - **Splash:** when the app starts, a native splash (the `theme_color` background, the icon, the app name, and a "DEV"
@@ -151,52 +151,52 @@ the background page.
 
 | Call | Options | Resolves |
 |---|---|---|
-| `Agent Hina.ui.toast(text, {long?})` | `long`: show longer | nothing (no Promise) |
-| `Agent Hina.ui.alert(x)` | `title`, `message`, `ok` (default `'OK'`) | `undefined` when closed |
-| `Agent Hina.ui.confirm(x)` | `title`, `message`, `ok` (`'OK'`), `cancel` (`'Cancel'`), `destructive` (OK in the error color) | `true` / `false` (dismissing is `false`) |
-| `Agent Hina.ui.prompt(x)` | `title`, `message`, `value` (initial text), `placeholder`, `ok`, `cancel` | the text, or `null` when cancelled. One line; the keyboard's Done key confirms |
-| `Agent Hina.ui.sheet({title, items})` | `items: [{id, label, icon?, destructive?}]`; `icon` is short text, usually one emoji | the chosen `id`, or `null` |
-| `Agent Hina.ui.pickDate({value?, title?})` | `value: 'YYYY-MM-DD'` (default today) | `'YYYY-MM-DD'` or `null` |
-| `Agent Hina.ui.pickTime({value?})` | `value: 'HH:MM'` (default now) | `'HH:MM'` (24-hour) or `null`. The clock face follows the phone's 12/24-hour setting |
+| `Hina.ui.toast(text, {long?})` | `long`: show longer | nothing (no Promise) |
+| `Hina.ui.alert(x)` | `title`, `message`, `ok` (default `'OK'`) | `undefined` when closed |
+| `Hina.ui.confirm(x)` | `title`, `message`, `ok` (`'OK'`), `cancel` (`'Cancel'`), `destructive` (OK in the error color) | `true` / `false` (dismissing is `false`) |
+| `Hina.ui.prompt(x)` | `title`, `message`, `value` (initial text), `placeholder`, `ok`, `cancel` | the text, or `null` when cancelled. One line; the keyboard's Done key confirms |
+| `Hina.ui.sheet({title, items})` | `items: [{id, label, icon?, destructive?}]`; `icon` is short text, usually one emoji | the chosen `id`, or `null` |
+| `Hina.ui.pickDate({value?, title?})` | `value: 'YYYY-MM-DD'` (default today) | `'YYYY-MM-DD'` or `null` |
+| `Hina.ui.pickTime({value?})` | `value: 'HH:MM'` (default now) | `'HH:MM'` (24-hour) or `null`. The clock face follows the phone's 12/24-hour setting |
 
 ```js
-if (await Agent Hina.ui.confirm({ title: 'Delete note?', message: note.title, ok: 'Delete', destructive: true })) remove(note);
+if (await Hina.ui.confirm({ title: 'Delete note?', message: note.title, ok: 'Delete', destructive: true })) remove(note);
 
-const name = await Agent Hina.ui.prompt({ title: 'Rename', value: note.title, placeholder: 'Title' });
+const name = await Hina.ui.prompt({ title: 'Rename', value: note.title, placeholder: 'Title' });
 if (name !== null) rename(note, name);
 
-const choice = await Agent Hina.ui.sheet({
+const choice = await Hina.ui.sheet({
   title: 'Photo',
   items: [{ id: 'share', label: 'Share' }, { id: 'edit', label: 'Edit' }, { id: 'delete', label: 'Delete', destructive: true }],
 });
 
-const day = await Agent Hina.ui.pickDate({ value: '2026-12-24', title: 'Due date' });
-Agent Hina.ui.toast('Saved');
+const day = await Hina.ui.pickDate({ value: '2026-12-24', title: 'Due date' });
+Hina.ui.toast('Saved');
 ```
 
 The standard `alert()`, `confirm()` and `prompt()` also show native dialogs (titled with the app name) and block the
-page's script like in a browser. Prefer `Agent Hina.ui.*` in new code. If a second dialog opens while one is showing, the
+page's script like in a browser. Prefer `Hina.ui.*` in new code. If a second dialog opens while one is showing, the
 newest is shown and the older one comes back when it closes. In a background task nobody can answer them: `alert()`
 returns at once, `confirm()` returns `false` and `prompt()` returns `null`, with a warning in the console.
 
 ## Media viewer
 
-`Agent Hina.ui.viewMedia()` opens a native full-screen viewer like a phone gallery: swipe between items, pinch or
+`Hina.ui.viewMedia()` opens a native full-screen viewer like a phone gallery: swipe between items, pinch or
 double-tap to zoom photos (HEIC too), videos in the system player with its controls, a share button, and close.
 
 ```js
 const items = photos.map((p) => ({ src: p.path, title: p.name, type: p.isVideo ? 'video' : 'image' }));
-const { index } = await Agent Hina.ui.viewMedia({ items, index: 3 });   // resolves when the viewer closes
+const { index } = await Hina.ui.viewMedia({ items, index: 3 });   // resolves when the viewer closes
 scrollToPhoto(index);
 
-await Agent Hina.ui.viewMedia(['data/a.jpg', 'https://example.com/b.jpg']);   // an array works too
+await Hina.ui.viewMedia(['data/a.jpg', 'https://example.com/b.jpg']);   // an array works too
 ```
 
 | Option | Type | Default | Meaning |
 |---|---|---|---|
 | `items` | array, required | | Each item: a path or URL string, or `{src, type?, title?}`. Up to 5000 |
 | `index` | number | `0` | The item shown first |
-| item `src` | string | | `data/…`, `app:<id>/…`, `~/…` or `/…` (checked like [Agent Hina.fs](files.md)), an `http(s)` URL (checked like the [network](network.md); a hostname that points to this phone needs the `localhost` permission), or any other string = a file of the app itself, relative to its folder (for an installed app, only if it matches the signature) |
+| item `src` | string | | `data/…`, `app:<id>/…`, `~/…` or `/…` (checked like [Hina.fs](files.md)), an `http(s)` URL (checked like the [network](network.md); a hostname that points to this phone needs the `localhost` permission), or any other string = a file of the app itself, relative to its folder (for an installed app, only if it matches the signature) |
 | item `type` | `'image'` \| `'video'` | from the extension | Video extensions: `mp4`, `m4v`, `webm`, `mov`, `3gp`, `mkv` |
 | item `title` | string | the file name | Shown at the top |
 
@@ -211,24 +211,24 @@ Every page is its own native screen (an Android activity) with its own WebView, 
 
 ```js
 // open item.html as a new screen that slides in
-Agent Hina.nav.push('item.html', { id: 7, tags: ['a', 'b'] });
+Hina.nav.push('item.html', { id: 7, tags: ['a', 'b'] });
 
 // in item.html
-const id = Number(Agent Hina.page.params.id);            // params are strings
-const tags = JSON.parse(Agent Hina.page.params.tags);    // objects were JSON-encoded
-document.querySelector('#close').onclick = () => Agent Hina.nav.back();
+const id = Number(Hina.page.params.id);            // params are strings
+const tags = JSON.parse(Hina.page.params.tags);    // objects were JSON-encoded
+document.querySelector('#close').onclick = () => Hina.nav.back();
 ```
 
 | Call | Meaning |
 |---|---|
-| `Agent Hina.nav.push(path, params?)` | Opens `path` (relative to the app folder; a leading `/` or `./` is removed; empty = the entry page) as a new screen. `params` are added to the query string: strings and numbers as text, objects as JSON |
-| `Agent Hina.nav.back()` | Closes this page. On the first page it sends the app to the background (like Home; it stays in Recents) |
-| `Agent Hina.nav.close()` | Closes the whole app, all its pages, and removes it from Recents |
+| `Hina.nav.push(path, params?)` | Opens `path` (relative to the app folder; a leading `/` or `./` is removed; empty = the entry page) as a new screen. `params` are added to the query string: strings and numbers as text, objects as JSON |
+| `Hina.nav.back()` | Closes this page. On the first page it sends the app to the background (like Home; it stays in Recents) |
+| `Hina.nav.close()` | Closes the whole app, all its pages, and removes it from Recents |
 
-`Agent Hina.page` describes the current page: `{id, path, params, root, background}`. `path` has no query string;
+`Hina.page` describes the current page: `{id, path, params, root, background}`. `path` has no query string;
 `params` holds the query string values as strings; `root` is `true` only on the first page.
 
-- Pages share `localStorage`, `Agent Hina.storage`, IndexedDB and files. A page that comes back on screen after a
+- Pages share `localStorage`, `Hina.storage`, IndexedDB and files. A page that comes back on screen after a
   `pause` (back from a pushed page, another app, Home, the lock screen) gets a `resume` event: refresh what another
   page may have changed there. The first open sends no `resume`: that is the page's own load.
 - Inside one page, normal navigation also works (`<a href="other.html">`, `location.href`): it loads in the same
@@ -242,12 +242,12 @@ document.querySelector('#close').onclick = () => Agent Hina.nav.back();
 The system back gesture or button is handled in this order:
 
 1. a full-screen video exits full screen;
-2. the page's `Agent Hina.onBack` handlers, newest first, until one returns `true`;
+2. the page's `Hina.onBack` handlers, newest first, until one returns `true`;
 3. the page's own history (if it navigated inside the same screen);
 4. a pushed page closes; the first page sends the app to the background.
 
 ```js
-const remove = Agent Hina.onBack(() => {
+const remove = Hina.onBack(() => {
   if (panel.classList.contains('is-open')) { closePanel(); return true; }   // handled
   if (currentTab !== 'home') { showTab('home'); return true; }
   return false;                                                             // let the app go back
@@ -261,21 +261,21 @@ The handler must return `true` synchronously. An `async` function returns a Prom
 
 | Call | Permission | Meaning |
 |---|---|---|
-| `Agent Hina.device.haptic(kind?)` | none | A short vibration: `'light'` (default), `'medium'`, `'heavy'`, `'selection'`, `'success'`, `'warning'`, `'error'`. On Android 11+ `success` and `warning`/`error` use the system's confirm and reject patterns |
-| `Agent Hina.device.copy(text)` | none | Puts text on the clipboard |
-| `Agent Hina.device.paste()` | `clipboard` | Reads the clipboard as text (`''` when empty) |
-| `Agent Hina.device.share({title?, text?, url?})` | none | Android's share sheet with text (`text` and `url` joined by a new line; `title` as subject) |
-| `Agent Hina.device.openUrl(url)` | none | Opens an `http`, `https`, `mailto` or `tel` link in another app. Apps without a granted `network` permission ask the user first |
-| `Agent Hina.device.info()` | none | `{manufacturer, model, android, sdk, dark, locale}`: `android` is the version name (`'14'`), `sdk` the API level (`34`), `dark` Agent Hina's mode, `locale` a tag like `'en-US'` |
-| `Agent Hina.device.status()` | none | Network and battery now. See [intents](intents.md#device-status) |
+| `Hina.device.haptic(kind?)` | none | A short vibration: `'light'` (default), `'medium'`, `'heavy'`, `'selection'`, `'success'`, `'warning'`, `'error'`. On Android 11+ `success` and `warning`/`error` use the system's confirm and reject patterns |
+| `Hina.device.copy(text)` | none | Puts text on the clipboard |
+| `Hina.device.paste()` | `clipboard` | Reads the clipboard as text (`''` when empty) |
+| `Hina.device.share({title?, text?, url?})` | none | Android's share sheet with text (`text` and `url` joined by a new line; `title` as subject) |
+| `Hina.device.openUrl(url)` | none | Opens an `http`, `https`, `mailto` or `tel` link in another app. Apps without a granted `network` permission ask the user first |
+| `Hina.device.info()` | none | `{manufacturer, model, android, sdk, dark, locale}`: `android` is the version name (`'14'`), `sdk` the API level (`34`), `dark` Agent Hina's mode, `locale` a tag like `'en-US'` |
+| `Hina.device.status()` | none | Network and battery now. See [intents](intents.md#device-status) |
 
 ```js
-saveButton.onclick = async () => { await save(); Agent Hina.device.haptic('success'); Agent Hina.ui.toast('Saved'); };
-await Agent Hina.device.copy(link);
-await Agent Hina.device.share({ title: 'My list', text: list.join('\n') });
+saveButton.onclick = async () => { await save(); Hina.device.haptic('success'); Hina.ui.toast('Saved'); };
+await Hina.device.copy(link);
+await Hina.device.share({ title: 'My list', text: list.join('\n') });
 ```
 
-To share a file rather than text, use `Agent Hina.intent.send({action: 'share', path})`: the user can pick another mini
+To share a file rather than text, use `Hina.intent.send({action: 'share', path})`: the user can pick another mini
 app or "Other apps…" (Android apps). See [intents](intents.md).
 
 ### Camera and microphone

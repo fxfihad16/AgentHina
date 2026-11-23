@@ -24,7 +24,7 @@ The built-in slash command **`/mini_app <what it should do>`** tells the agent t
 - **Permissions are granted by the user.** The agent can list, reset or deny a development app's permissions, never grant them. When an app asks for a permission, its prompt is on the phone's screen and the user answers it.
 - **The key password stays on the phone.** The agent can create the developer key and open the backup screen, but the password is typed on the phone and the agent never sees the key or the password. Never ask the user for it.
 - **Developer mode.** Development apps only run while developer mode is on (Mini Apps → the `</>` button). `miniapp_list` reports it.
-- Mini apps can't use this server through `Agent Hina.mcp`: an app never gets the tools to script other apps.
+- Mini apps can't use this server through `Hina.mcp`: an app never gets the tools to script other apps.
 
 ## The development loop
 
@@ -69,7 +69,7 @@ Every app, development and installed: id, name, version, `kind`, location, wheth
 
 ### miniapp_create
 
-Creates a development app from a small working template: `manifest.json`, `index.html` (UI kit), `app.js` (a counter kept in `Agent Hina.storage`, a native confirm dialog and a toast) and `style.css`.
+Creates a development app from a small working template: `manifest.json`, `index.html` (UI kit), `app.js` (a counter kept in `Hina.storage`, a native confirm dialog and a toast) and `style.css`.
 
 | Argument | Type | Meaning |
 |---|---|---|
@@ -138,10 +138,10 @@ return document.querySelectorAll('.item').length
 ```js
 document.querySelector('#add').click();
 await new Promise(r => setTimeout(r, 300));
-return { count: document.querySelector('#count').textContent, stored: Agent Hina.storage.get('count') };
+return { count: document.querySelector('#count').textContent, stored: Hina.storage.get('count') };
 ```
 
-The result is JSON when it can be (`result`), a DOM element comes back as its HTML, and anything else as text with its `type`. A thrown error or a syntax error comes back as `error` with its stack. Console lines printed meanwhile are returned in `console`. `timeout_ms` defaults to 10000 (max 60000). Native dialogs opened by the code (`Agent Hina.ui.confirm`…) wait for the user: don't await them in eval.
+The result is JSON when it can be (`result`), a DOM element comes back as its HTML, and anything else as text with its `type`. A thrown error or a syntax error comes back as `error` with its stack. Console lines printed meanwhile are returned in `console`. `timeout_ms` defaults to 10000 (max 60000). Native dialogs opened by the code (`Hina.ui.confirm`…) wait for the user: don't await them in eval.
 
 ### miniapp_screenshot
 

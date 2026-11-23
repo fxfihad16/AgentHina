@@ -1,14 +1,14 @@
 # Files
 
-`Agent Hina.fs` reads and writes real files natively. Every app has a private `data/` folder it may always use. Folders
+`Hina.fs` reads and writes real files natively. Every app has a private `data/` folder it may always use. Folders
 outside it (shared storage like `/sdcard/Download`, the Agent Hina home `~/`) are reachable only when the manifest
 declares them and the user grants them, or when the user picks a folder at runtime. Every path is checked natively,
 after symlinks are resolved, before anything is read or written. Files are served to `<img>`, `<video>` and `fetch`
-through `Agent Hina.fs.url()`, with byte ranges and native thumbnails.
+through `Hina.fs.url()`, with byte ranges and native thumbnails.
 
 ## Paths
 
-Every `Agent Hina.fs` method takes one of these forms. Anything else (for example a bare `notes.txt`) rejects with
+Every `Hina.fs` method takes one of these forms. Anything else (for example a bare `notes.txt`) rejects with
 `TypeError`.
 
 | Form | Means | Access |
@@ -21,7 +21,7 @@ Every `Agent Hina.fs` method takes one of these forms. Anything else (for exampl
 Paths are made canonical before the check: `..` and every symlink are resolved to the real location. `/sdcard/…` is
 reported back as its real path, `/storage/emulated/0/…`.
 
-The same forms (`app:<id>/…` included) work for `Agent Hina.ui.viewMedia` items and for notification images (`icon`,
+The same forms (`app:<id>/…` included) work for `Hina.ui.viewMedia` items and for notification images (`icon`,
 `smallIcon`, `image`), with the same checks.
 
 Never reachable, whatever is granted:
@@ -60,8 +60,8 @@ manifest:
 | `write` | `write`, `writeJSON`, `mkdir`, `delete`, `move`, `stat`, `exists` (no reading) |
 | `readwrite` | Everything |
 
-A granted folder also covers everything below it. `Agent Hina.permissions.request('storage')` asks for every declared
-folder that isn't granted yet; `Agent Hina.permissions.query('storage:/sdcard/DCIM')` checks one. `query('storage')` is
+A granted folder also covers everything below it. `Hina.permissions.request('storage')` asks for every declared
+folder that isn't granted yet; `Hina.permissions.query('storage:/sdcard/DCIM')` checks one. `query('storage')` is
 `granted` only when every declared folder is granted, `prompt` while any is undecided, and `denied` otherwise.
 
 ## Reading and writing
@@ -74,21 +74,21 @@ folder that isn't granted yet; `Agent Hina.permissions.query('storage:/sdcard/DC
 | `writeJSON(path, value)` | `Promise<void>` | `JSON.stringify(value, null, 2)` |
 
 ```js
-await Agent Hina.fs.write('data/notes.txt', 'Hello');
-await Agent Hina.fs.write('data/log.txt', `${new Date().toISOString()} started\n`, { append: true });
-const text = await Agent Hina.fs.read('data/notes.txt');
+await Hina.fs.write('data/notes.txt', 'Hello');
+await Hina.fs.write('data/log.txt', `${new Date().toISOString()} started\n`, { append: true });
+const text = await Hina.fs.read('data/notes.txt');
 
-await Agent Hina.fs.writeJSON('data/state.json', { count: 3 });
-const state = await Agent Hina.fs.readJSON('data/state.json').catch(() => ({ count: 0 }));
+await Hina.fs.writeJSON('data/state.json', { count: 3 });
+const state = await Hina.fs.readJSON('data/state.json').catch(() => ({ count: 0 }));
 
 // binary
 const blob = await (await fetch('https://example.com/a.png')).blob();
-await Agent Hina.fs.write('data/images/a.png', blob);
-const b64 = await Agent Hina.fs.read('data/images/a.png', { encoding: 'base64' });
+await Hina.fs.write('data/images/a.png', blob);
+const b64 = await Hina.fs.read('data/images/a.png', { encoding: 'base64' });
 ```
 
 Whole-file reads and writes travel through the bridge as text or base64. For big files (videos, large photos) use
-`Agent Hina.fs.url()` to stream them instead of reading them into JavaScript.
+`Hina.fs.url()` to stream them instead of reading them into JavaScript.
 
 ## Folders and file info
 
@@ -109,11 +109,11 @@ passed straight back to other methods.
 with `NotAllowedError` rather than returning `false`.
 
 ```js
-const entries = await Agent Hina.fs.list('/sdcard/Download');
+const entries = await Hina.fs.list('/sdcard/Download');
 for (const e of entries) console.log(e.type, e.name, e.size);
-await Agent Hina.fs.mkdir('data/exports');
-await Agent Hina.fs.move('data/draft.txt', 'data/exports/final.txt');
-await Agent Hina.fs.delete('data/cache', { recursive: true });
+await Hina.fs.mkdir('data/exports');
+await Hina.fs.move('data/draft.txt', 'data/exports/final.txt');
+await Hina.fs.delete('data/cache', { recursive: true });
 ```
 
 Root folders can't be deleted or moved as a whole: the app's own `data` folder, a shared-group app's `data` folder, a
@@ -129,17 +129,17 @@ granted folder itself, home and `/sdcard` (`NotAllowedError`).
 - `delete(path, {recursive: true})` removes links inside the folder, never what they point to.
 - `move` across storages skips symlinks when it copies.
 
-## Showing files: Agent Hina.fs.url()
+## Showing files: Hina.fs.url()
 
-`Agent Hina.fs.url(path, {thumb?})` returns a same-origin URL (synchronously) that streams the file natively. Use it in
+`Hina.fs.url(path, {thumb?})` returns a same-origin URL (synchronously) that streams the file natively. Use it in
 `<img>`, `<video>`, `<audio>`, CSS, or `fetch()`.
 
 ```js
-img.src = Agent Hina.fs.url('data/photo.jpg');
-video.src = Agent Hina.fs.url('/sdcard/DCIM/Camera/clip.mp4');   // seeking works (Range requests)
-grid.append(...photos.map((p) => Object.assign(new Image(), { src: Agent Hina.fs.url(p.path, { thumb: 320 }), loading: 'lazy' })));
+img.src = Hina.fs.url('data/photo.jpg');
+video.src = Hina.fs.url('/sdcard/DCIM/Camera/clip.mp4');   // seeking works (Range requests)
+grid.append(...photos.map((p) => Object.assign(new Image(), { src: Hina.fs.url(p.path, { thumb: 320 }), loading: 'lazy' })));
 
-const blob = await (await fetch(Agent Hina.fs.url('data/report.pdf'))).blob();
+const blob = await (await fetch(Hina.fs.url('data/report.pdf'))).blob();
 ```
 
 | Option | Type | Default | Meaning |
@@ -157,15 +157,15 @@ const blob = await (await fetch(Agent Hina.fs.url('data/report.pdf'))).blob();
 
 ## Picking files
 
-### Agent Hina.fs.pick()
+### Hina.fs.pick()
 
 Opens Android's file picker. The chosen files are **copied** into `data/imports/` (the app never gets the original);
 a name that already exists gets ` (1)`, ` (2)`… added.
 
 ```js
-const files = await Agent Hina.fs.pick({ accept: 'image/*', multiple: true });
+const files = await Hina.fs.pick({ accept: 'image/*', multiple: true });
 // [{name: 'IMG_1.jpg', path: 'data/imports/IMG_1.jpg', size: 204800, type: 'image/jpeg'}]
-for (const f of files) addPhoto(Agent Hina.fs.url(f.path));
+for (const f of files) addPhoto(Hina.fs.url(f.path));
 ```
 
 | Option | Type | Default | Meaning |
@@ -189,15 +189,15 @@ console logs a warning.
 <input type="file" accept="image/*" capture>
 ```
 
-### Agent Hina.fs.pickFolder()
+### Hina.fs.pickFolder()
 
 The user picks any folder in Agent Hina's own file explorer (phone storage or the Agent Hina home), and the app gets the
 manifest's `pick` access to it, kept until the app gives it back. The manifest must allow it with
 `"storage": {"pick": "read" | "write" | "readwrite"}` (`true` means `read`).
 
 ```js
-const picked = await Agent Hina.fs.pickFolder();   // {path: '/storage/emulated/0/Music', access: 'read'} or null
-if (picked) render(await Agent Hina.fs.list(picked.path));
+const picked = await Hina.fs.pickFolder();   // {path: '/storage/emulated/0/Music', access: 'read'} or null
+if (picked) render(await Hina.fs.list(picked.path));
 ```
 
 - Resolves `null` when the user cancels.
@@ -210,7 +210,7 @@ if (picked) render(await Agent Hina.fs.list(picked.path));
   have nothing in common (`read` and `write`), the folder no longer counts. Removing `pick` from the manifest disables
   all picked folders.
 
-### Agent Hina.fs.folders() and forgetFolder()
+### Hina.fs.folders() and forgetFolder()
 
 `folders()` lists every folder the app may use right now:
 
@@ -228,22 +228,22 @@ Manifest folders appear only when granted, with their real path (`/storage/emula
 all picked folders when called without a path. The user can also remove them in App info.
 
 ```js
-for (const f of await Agent Hina.fs.folders()) {
-  if (f.source === 'picked') await Agent Hina.fs.forgetFolder(f.path);
+for (const f of await Hina.fs.folders()) {
+  if (f.source === 'picked') await Hina.fs.forgetFolder(f.path);
 }
 ```
 
 ## Files sent by other apps
 
-When another mini app sends a file with `Agent Hina.intent.send({path})`, the receiving app gets a **one-day read grant
+When another mini app sends a file with `Hina.intent.send({path})`, the receiving app gets a **one-day read grant
 for that one file**: `read`, `stat`, `exists` and `url` work on the exact `path` from the `intent` event, nothing else
 in its folder, and no writes. Copy it into `data/` if you want to keep it:
 
 ```js
-Agent Hina.on('intent', async (it) => {
+Hina.on('intent', async (it) => {
   if (!it.path) return;
-  const blob = await (await fetch(Agent Hina.fs.url(it.path))).blob();
-  await Agent Hina.fs.write(`data/inbox/${it.path.split('/').pop()}`, blob);
+  const blob = await (await fetch(Hina.fs.url(it.path))).blob();
+  await Hina.fs.write(`data/inbox/${it.path.split('/').pop()}`, blob);
 });
 ```
 

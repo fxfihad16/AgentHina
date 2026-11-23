@@ -40,7 +40,7 @@ Every permission problem rejects with a `DOMException` named `NotAllowedError`. 
 | Message | Fix |
 |---|---|
 | `"<name>" permission is undeclared` | Add it to `permissions` in the manifest. Check the spelling: an unknown name is ignored, and the console shows a warning `manifest.json: Unknown permission "<name>" ignored …`. `"storage"` in the list form and `"mcp": true` are ignored too ([manifest.md](manifest.md#manifest-warnings)). |
-| `"<name>" permission is prompt` | Not decided yet (new, or its declaration was widened). Call `Agent Hina.permissions.request(name)` first. |
+| `"<name>" permission is prompt` | Not decided yet (new, or its declaration was widened). Call `Hina.permissions.request(name)` first. |
 | `"<name>" permission is denied` | The user said no. Ask again with `request()`, or the user turns it on in App info. |
 | `Network request to <host> blocked: the app has no "network" permission` | Declare `network` and get it granted. |
 | `… <host> is not in the manifest's network hosts` | Add the host. `*.example.com` doesn't cover `example.com`. Images, fonts and scripts from other hosts need their hosts too (CDNs: `cdn.jsdelivr.net`, `fonts.gstatic.com`, …), and so do hosts a request redirects to. |
@@ -150,7 +150,7 @@ An installed app labeled **modified** (dimmed, in red) has files that no longer 
 | Log | Where |
 |---|---|
 | Console of an app (page, workers, background tasks, runtime messages) | `~/.hina/mini-apps/<id>/console.log`, previous part in `console.log.1` (rotated at 1 MB) |
-| The same, live, last 1000 lines | Developer bubble → **Console**, or `Agent Hina.dev.console()` |
+| The same, live, last 1000 lines | Developer bubble → **Console**, or `Hina.dev.console()` |
 | Background runs and skips | App info → **Background**, and the console log |
 | Why a folder is not listed | The red lines on the Mini Apps screen. Optional, more detail: Android's log, tag `MiniApps` (`logcat -s MiniApps`) |
 | Ignored or suspicious manifest entries | The app's console (`manifest.json: …` warnings), and `miniapp_validate` |

@@ -1,9 +1,9 @@
 # Notifications
 
-`Agent Hina.notify` posts real Android notifications, with what an installed app gets: the app's own channels in
+`Hina.notify` posts real Android notifications, with what an installed app gets: the app's own channels in
 Android settings, accent colors, big text / picture / inbox / chat styles, progress bars, countdowns and stopwatches
 the system ticks by itself, ongoing notifications, up to three buttons and an inline reply box. Taps, buttons, replies
-and swipe-aways come back to the app as `notification` events. Reminders (`Agent Hina.notify.schedule`) are kept
+and swipe-aways come back to the app as `notification` events. Reminders (`Hina.notify.schedule`) are kept
 natively: they fire with the app closed and survive restarts and reboots. Showing, scheduling and creating channels
 need the `notifications` permission.
 
@@ -12,8 +12,8 @@ need the `notifications` permission.
 ```
 
 ```js
-if (await Agent Hina.permissions.request('notifications') === 'granted') {
-  await Agent Hina.notify.show({ id: 'hello', title: 'Hello', body: 'From a mini app' });
+if (await Hina.permissions.request('notifications') === 'granted') {
+  await Hina.notify.show({ id: 'hello', title: 'Hello', body: 'From a mini app' });
 }
 ```
 
@@ -100,9 +100,9 @@ Without `channel`, notifications use one of Agent Hina's three shared channels: 
 notification settings under "Mini app: <name>", where the user can tune each one.
 
 ```js
-await Agent Hina.notify.channel({ id: 'timer', name: 'Running timer', importance: 'default', sound: false, vibrate: false });
-await Agent Hina.notify.channel({ id: 'messages', name: 'Messages', importance: 'high', vibrate: [0, 120, 80, 120], lights: '#6750A4' });
-await Agent Hina.notify.show({ id: 'timer', channel: 'timer', ongoing: true, title: 'Focus', countdown: Date.now() + 25 * 60_000 });
+await Hina.notify.channel({ id: 'timer', name: 'Running timer', importance: 'default', sound: false, vibrate: false });
+await Hina.notify.channel({ id: 'messages', name: 'Messages', importance: 'high', vibrate: [0, 120, 80, 120], lights: '#6750A4' });
+await Hina.notify.show({ id: 'timer', channel: 'timer', ongoing: true, title: 'Focus', countdown: Date.now() + 25 * 60_000 });
 ```
 
 | Option | Type | Default | Meaning |
@@ -122,7 +122,7 @@ vibration can't be changed. To change them, use a new channel id (and `deleteCha
 ## Events
 
 ```js
-Agent Hina.on('notification', (e) => {
+Hina.on('notification', (e) => {
   // e = {id, action, reply?, queued?}
   if (e.id === 'timer' && e.action === 'pause') pauseTimer();
   if (e.action === 'reply') sendMessage(e.reply);
@@ -152,25 +152,25 @@ Register the listener when the page starts, so queued events find it.
 
 ## Reminders
 
-`Agent Hina.notify.schedule()` keeps a notification to show later, natively. No app code runs when it fires: the
+`Hina.notify.schedule()` keeps a notification to show later, natively. No app code runs when it fires: the
 notification is shown exactly as described by its options. Reminders survive app restarts, Agent Hina restarts and
 reboots, and are re-planned after time or time-zone changes. Scheduling the same `id` again replaces the reminder.
 
 ```js
 // in 10 minutes
-await Agent Hina.notify.schedule({ id: 'tea', title: 'Tea is ready', delay: '10m' });
+await Hina.notify.schedule({ id: 'tea', title: 'Tea is ready', delay: '10m' });
 
 // every day at 07:00
-await Agent Hina.notify.schedule({ id: 'morning', title: 'Good morning', body: 'Plan your day', at: '07:00', repeat: 'daily' });
+await Hina.notify.schedule({ id: 'morning', title: 'Good morning', body: 'Plan your day', at: '07:00', repeat: 'daily' });
 
 // Monday and Thursday at 08:00, until the end of the year
-await Agent Hina.notify.schedule({
+await Hina.notify.schedule({
   id: 'gym', title: 'Gym', at: '08:00',
   repeat: { days: ['mon', 'thu'], until: new Date('2026-12-31T23:59') },
 });
 
 // a one-off at a local date and time, with a button and a color
-await Agent Hina.notify.schedule({
+await Hina.notify.schedule({
   id: 'party', title: 'Party', body: 'Leave in 30 minutes', at: '2026-12-24T18:00',
   color: '#C62828', actions: [{ id: 'snooze', title: 'Snooze', open: false }],
 });

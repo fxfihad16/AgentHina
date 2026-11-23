@@ -140,7 +140,7 @@
     css += '--ag-app-color:' + (theme.appColor || colors.primary || '#6750a4') + ';color-scheme:' + (theme.dark ? 'dark' : 'light') + '}';
     themeStyle.textContent = css;
     document.documentElement.setAttribute('data-theme', theme.dark ? 'dark' : 'light');
-    if (window.Agent Hina) window.Agent Hina.theme = theme;
+    if (window.Hina) window.Hina.theme = theme;
   }
   applyTheme(BOOT.theme);
   on('theme', function (t) { applyTheme(t); });
@@ -432,7 +432,7 @@
     send: function (o) { return call('intent.send', o || {}); }
   };
   on('intent', function (d) { intentApi.current = d; });
-  var Agent Hina = {
+  var Hina = {
     sdk: BOOT.sdk || 1,
     app: Object.freeze(Object.assign({}, BOOT.app)),
     page: Object.freeze({ id: (BOOT.page || {}).id, path: (BOOT.page || {}).path, params: Object.freeze(Object.assign({}, (BOOT.page || {}).params)), root: !!(BOOT.page || {}).root, background: !!(BOOT.page || {}).background }),
@@ -464,7 +464,7 @@
     },
     reload: function () { send('app.reload'); }
   };
-  Object.defineProperty(window, 'Agent Hina', { value: Agent Hina, configurable: false, enumerable: true, writable: false });
+  Object.defineProperty(window, 'Hina', { value: Hina, configurable: false, enumerable: true, writable: false });
 
   // ------------------------------------------------------------------ running a background task
   // This page is the invisible one of a background task: once the background script has run, call its handler.
@@ -475,7 +475,7 @@
         send('bg.done', { runId: t.runId, ok: ok, error: err ? String((err && err.stack) || (err && err.message) || err) : '' });
       };
       var h = bgHandlers[t.name] || bgHandlers['*'];
-      if (typeof h !== 'function') { finish(false, 'No handler: call Agent Hina.background.on("' + t.name + '", fn) in the background script'); return; }
+      if (typeof h !== 'function') { finish(false, 'No handler: call Hina.background.on("' + t.name + '", fn) in the background script'); return; }
       Promise.resolve().then(function () { return h({ name: t.name, reason: t.reason, runId: t.runId, data: t.data || null }); })
         .then(function () { finish(true); }, function (e) { console.error(e); finish(false, e); });
     });

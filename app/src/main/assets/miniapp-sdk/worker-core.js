@@ -143,7 +143,7 @@
     if (Array.isArray(o.messages)) o.messages = o.messages.map(function (m) { return Object.assign({}, m, m.time instanceof Date ? { time: m.time.getTime() } : {}); });
     return o;
   }
-  define(G, 'Agent Hina', {
+  define(G, 'Hina', {
     sdk: BOOT.sdk || 1,
     worker: true,
     app: Object.freeze(Object.assign({}, BOOT.app)),

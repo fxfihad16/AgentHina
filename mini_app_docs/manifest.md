@@ -238,7 +238,7 @@ Entries that are ignored or look like a mistake don't stop the app: `"storage"` 
 | `{ "full": true }` | `storage:all`, access from `"access"` (default `readwrite`) |
 | `{ "full": "read" }` | `storage:all` with that access |
 | `{ "folders": [...] }` | one `storage:<path>` permission per folder |
-| `{ "pick": ... }` | allows `Agent Hina.fs.pickFolder()` |
+| `{ "pick": ... }` | allows `Hina.fs.pickFolder()` |
 
 Folder entries:
 
@@ -298,7 +298,7 @@ or
 - The script that runs background tasks while the app is closed. It runs in an invisible page with the SDK ([background.md](background.md)).
 - The path is relative to the app folder; a leading `/` is removed. A path with a `..` part or a part starting with `.` is refused (as if missing).
 - `"type": "module"` loads it as an ES module.
-- Background tasks also need the `background` permission. Without a script, `Agent Hina.background.run()` fails with `InvalidStateError` and scheduled runs are skipped with "The manifest has no background script".
+- Background tasks also need the `background` permission. Without a script, `Hina.background.run()` fails with `InvalidStateError` and scheduled runs are skipped with "The manifest has no background script".
 
 ## intents
 

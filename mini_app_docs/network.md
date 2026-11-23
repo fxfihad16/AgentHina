@@ -47,7 +47,7 @@ redirect or a connection blocked on the way fails with `TypeError` instead ("Fai
 try {
   await fetch('https://example.com/');
 } catch (e) {
-  if (e.name === 'NotAllowedError') Agent Hina.ui.toast('This app may not connect to example.com');
+  if (e.name === 'NotAllowedError') Hina.ui.toast('This app may not connect to example.com');
   else throw e;
 }
 ```
@@ -168,7 +168,7 @@ Two native features load web URLs for the app too:
 
 - **Notification images** (`icon`, `smallIcon`, `image` in [notifications](notifications.md)) from an `http(s)` URL
   are fetched as the app: the same hosts list, cookies and `localhost` rules.
-- **The media viewer** (`Agent Hina.ui.viewMedia`) checks a web URL against the hosts list; a hostname that points to
+- **The media viewer** (`Hina.ui.viewMedia`) checks a web URL against the hosts list; a hostname that points to
   this phone needs the `localhost` permission too.
 
 ## Cookies and credentials
@@ -185,7 +185,7 @@ The app has one persistent cookie jar (see [storage](storage.md#cookies)):
 
 - Cookies are applied on every hop of a redirect, so a login that redirects keeps its session.
 - If you set a `Cookie` header yourself, it is merged with the jar's cookies; your values win for the same name.
-- `Agent Hina.cookies.import(url, header)` saves a `Cookie:` header the user copied from a browser, for APIs that need a
+- `Hina.cookies.import(url, header)` saves a `Cookie:` header the user copied from a browser, for APIs that need a
   browser login.
 
 ## Not supported

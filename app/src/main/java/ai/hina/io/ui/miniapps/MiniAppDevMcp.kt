@@ -40,7 +40,7 @@ import kotlin.coroutines.resume
  */
 object MiniAppDevMcp {
     const val INSTRUCTIONS =
-        "Build, run, debug, sign and install Agent Hina mini apps (HTML/CSS/JS apps with a native Agent Hina.* SDK) on this phone. " +
+        "Build, run, debug, sign and install Agent Hina mini apps (HTML/CSS/JS apps with a native Hina.* SDK) on this phone. " +
             "Start with miniapp_guide: it serves the guide bundled with this Agent Hina version (topic README, then getting-started, manifest " +
             "and the API pages you need). Follow it instead of assuming browser, PWA or Cordova behaviour. " +
             "Loop: miniapp_create → miniapp_write_files → miniapp_validate → miniapp_open → miniapp_console / miniapp_eval / miniapp_screenshot → fix " +
@@ -69,7 +69,7 @@ object MiniAppDevMcp {
 
     fun tools(): JSONArray = JSONArray().apply {
         put(tool("miniapp_guide",
-            "START HERE. The mini app guide bundled with this Agent Hina version: architecture, manifest, permissions, every Agent Hina.* API, " +
+            "START HERE. The mini app guide bundled with this Agent Hina version: architecture, manifest, permissions, every Hina.* API, " +
                 "UI kit, signing, shared data, this MCP. No topic: the README with the table of contents. Use query to search all pages.",
             emptyList(), true,
             "topic" to prop("string", "Page name, e.g. README, getting-started, manifest, permissions, api-reference, storage, files, network, ui, notifications, background, intents, threads, shared-data, signing-and-distribution, developer-mcp, troubleshooting."),
@@ -81,7 +81,7 @@ object MiniAppDevMcp {
                 "shared_id group, open pages, broken manifests and id conflicts. Also says whether developer mode is on and if the developer key is backed up.",
             emptyList(), true))
         put(tool("miniapp_create",
-            "Create a development app from a small working template (manifest.json, index.html, app.js, style.css using the UI kit and Agent Hina.storage) " +
+            "Create a development app from a small working template (manifest.json, index.html, app.js, style.css using the UI kit and Hina.storage) " +
                 "in ~/mini-apps/<folder>. Then edit it with miniapp_write_files.",
             listOf("id", "name"), false,
             "id" to prop("string", "Unique reverse-domain id, e.g. com.alex.budget. Letters, digits, '.', '_' or '-'. Data is stored under it: don't change it later."),
@@ -125,7 +125,7 @@ object MiniAppDevMcp {
             "since" to prop("integer", "Only entries after this time (ms), e.g. the \"now\" of a previous call."),
             "clear" to prop("boolean", "Clear the buffer after reading.")))
         put(tool("miniapp_eval",
-            "Run JavaScript in the development app's page on screen and return the result: read the DOM, click buttons, call Agent Hina.* APIs, check state. " +
+            "Run JavaScript in the development app's page on screen and return the result: read the DOM, click buttons, call Hina.* APIs, check state. " +
                 "The code is the body of an async function (use return / await); a bare expression returns its value. " +
                 "Console lines printed meanwhile are returned too. Opens the app first if needed.",
             listOf("app_id", "code"), false, appIdProp,
@@ -347,23 +347,23 @@ object MiniAppDevMcp {
             </html>
         """.trimIndent() + "\n")
         File(dir, "app.js").writeText("""
-            // Agent Hina.storage is native and synchronous: it survives restarts and app updates.
+            // Hina.storage is native and synchronous: it survives restarts and app updates.
             const countEl = document.getElementById('count');
-            let count = Agent Hina.storage.get('count', 0);
+            let count = Hina.storage.get('count', 0);
             const show = () => { countEl.textContent = count; };
 
             document.getElementById('add').addEventListener('click', () => {
               count++;
-              Agent Hina.storage.set('count', count);
+              Hina.storage.set('count', count);
               show();
             });
 
             document.getElementById('reset').addEventListener('click', async () => {
-              if (await Agent Hina.ui.confirm('Reset the counter?')) {
+              if (await Hina.ui.confirm('Reset the counter?')) {
                 count = 0;
-                Agent Hina.storage.set('count', 0);
+                Hina.storage.set('count', 0);
                 show();
-                Agent Hina.ui.toast('Reset');
+                Hina.ui.toast('Reset');
               }
             });
 

@@ -383,7 +383,7 @@ object MiniAppScheduler {
         if (name != null) db(context).delete("tasks", "app = ? AND name = ?", arrayOf(appId, name)) else db(context).delete("tasks", "app = ?", arrayOf(appId))
     }
 
-    /** Runs a task now (used by exact alarms, "Run now" in App info and Agent Hina.background.run). */
+    /** Runs a task now (used by exact alarms, "Run now" in App info and Hina.background.run). */
     fun runNow(context: Context, appId: String, name: String, reason: String, data: String? = null) {
         // one after another (a second tap must not cancel the first run)
         WorkManager.getInstance(context).enqueueUniqueWork(uniqueName(appId, name) + ":now", ExistingWorkPolicy.APPEND_OR_REPLACE,

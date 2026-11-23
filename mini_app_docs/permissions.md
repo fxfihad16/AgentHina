@@ -14,11 +14,11 @@ Each permission has one state:
 | State | Meaning |
 |---|---|
 | `granted` | The user allowed it. |
-| `denied` | The user said no. The app can ask again with `Agent Hina.permissions.request()`. |
+| `denied` | The user said no. The app can ask again with `Hina.permissions.request()`. |
 | `prompt` | Declared, but not decided yet (new, or its declaration was widened). |
 | `undeclared` | Not in the manifest. It can't be requested. |
 
-No permission is needed for the app's own things: its `data/` folder, `localStorage`, `sessionStorage`, `Agent Hina.storage`, IndexedDB, its cookie jar, native dialogs and sheets, toasts, haptics, writing to the clipboard, sharing text with `Agent Hina.device.share`, device info and status, and sending intents.
+No permission is needed for the app's own things: its `data/` folder, `localStorage`, `sessionStorage`, `Hina.storage`, IndexedDB, its cookie jar, native dialogs and sheets, toasts, haptics, writing to the clipboard, sharing text with `Hina.device.share`, device info and status, and sending intents.
 
 ## Every permission
 
@@ -28,13 +28,13 @@ No permission is needed for the app's own things: its `data/` folder, `localStor
 | `localhost` | `localhost` | Servers on this phone: `127.0.0.1`, `localhost` and the phone's own addresses (listed ports, or any) | **Local servers** |
 | `storage.folders[]` | `storage:<path>` (one per folder) | That folder, with the declared access | **Folder <path>**: "Read only", "Write (not read)" or "Read and change" |
 | `storage: true` / `full` | `storage:all` | Everything in shared storage and the home folder | **All files** (warning; typed confirmation) |
-| `storage.pick` | none (picking is the grant) | `Agent Hina.fs.pickFolder()` | the folder picker |
+| `storage.pick` | none (picking is the grant) | `Hina.fs.pickFolder()` | the folder picker |
 | `notifications` | `notifications` | Show notifications, create channels, schedule reminders | **Notifications** |
 | `background` | `background` | Background tasks while the app is closed | **Run in the background**: "Do tasks while closed, up to 48 times a day" |
-| `clipboard` | `clipboard` | Read the clipboard (`Agent Hina.device.paste()`) | **Clipboard** |
+| `clipboard` | `clipboard` | Read the clipboard (`Hina.device.paste()`) | **Clipboard** |
 | `camera` | `camera` | Camera through `getUserMedia`, and the camera app for `<input type="file" capture>` | **Camera** (warning) |
 | `microphone` | `microphone` | Microphone through `getUserMedia` | **Microphone** (warning) |
-| `mcp` | `mcp:<server>` (one per server) | `Agent Hina.mcp.list` / `call` on that server | **Agent Hina tools: <server>** |
+| `mcp` | `mcp:<server>` (one per server) | `Hina.mcp.list` / `call` on that server | **Agent Hina tools: <server>** |
 
 ### network
 
@@ -47,7 +47,7 @@ No permission is needed for the app's own things: its `data/` folder, `localStor
 - Every redirect is checked again: a redirect to a host outside the list fails. A host outside the list is not even looked up (DNS).
 - The native network stack handles `http`, `https`, `ws` and `wss`. Addresses on your local network (`192.168.x.x`) are ordinary hosts: list them. The phone's own addresses are the exception: they also need `localhost` ([below](#localhost)).
 - The WebView itself may only talk to the app's own origin. All other traffic goes through native code, which is where the checks happen.
-- Opening a link outside the app (`Agent Hina.device.openUrl`, or a tapped link that leaves the app) needs no permission when `network` is granted. Without it, Agent Hina asks first: **Open link?** "<App> wants to open: <url>". Only `http(s)`, `mailto` and `tel` links open.
+- Opening a link outside the app (`Hina.device.openUrl`, or a tapped link that leaves the app) needs no permission when `network` is granted. Without it, Agent Hina asks first: **Open link?** "<App> wants to open: <url>". Only `http(s)`, `mailto` and `tel` links open.
 
 ### localhost
 
@@ -77,7 +77,7 @@ Files outside the app's own `data/` folder. Paths in the API are `data/…` (own
 
 **All files.** `storage:all` grants the declared access to the whole home folder and the whole of shared storage (`/sdcard`), minus the protected places listed [below](#never-reachable).
 
-**Picked folders.** With `"pick"` in the manifest, `Agent Hina.fs.pickFolder()` opens Agent Hina's file explorer (**Give access to this folder**). The folder the user chooses gets the manifest's `pick` access. Picked folders are listed in App info under **Folders you picked** with **Remove**, and the app can give one back with `Agent Hina.fs.forgetFolder()`. If the manifest later changes `pick`, each picked folder keeps the access it was picked with, but never more than the new `pick` allows: a change from `read` to `write` doesn't make a folder picked for reading writable. When the two have nothing in common (`read` and `write`), that folder no longer counts. Removing `pick` turns them all off. In Remote mode the folder must be on the phone, not on the PC or server.
+**Picked folders.** With `"pick"` in the manifest, `Hina.fs.pickFolder()` opens Agent Hina's file explorer (**Give access to this folder**). The folder the user chooses gets the manifest's `pick` access. Picked folders are listed in App info under **Folders you picked** with **Remove**, and the app can give one back with `Hina.fs.forgetFolder()`. If the manifest later changes `pick`, each picked folder keeps the access it was picked with, but never more than the new `pick` allows: a change from `read` to `write` doesn't make a folder picked for reading writable. When the two have nothing in common (`read` and `write`), that folder no longer counts. Removing `pick` turns them all off. In Remote mode the folder must be on the phone, not on the PC or server.
 
 **Typed confirmation.** These need the user to type a phrase under a warning before they turn on:
 
@@ -115,7 +115,7 @@ Needed to register and run background tasks. The manifest must also name a `back
 
 ### clipboard
 
-Reading only. Writing (`Agent Hina.device.copy`) is always allowed.
+Reading only. Writing (`Hina.device.copy`) is always allowed.
 
 ### camera and microphone
 
@@ -125,13 +125,13 @@ There is no location permission: `navigator.geolocation` is always refused.
 
 ### mcp:<server>
 
-Each MCP server the app declares is its own permission. With it, `Agent Hina.mcp.list(server)` and `Agent Hina.mcp.call(server, tool, args)` reach that server's tools inside Agent Hina. Servers whose name contains `terminal`, `android` or `browser` are shown with a warning ("Can control parts of your phone through <server>"), because they can run commands, tap the screen or drive the browser. See [mcp.md](mcp.md).
+Each MCP server the app declares is its own permission. With it, `Hina.mcp.list(server)` and `Hina.mcp.call(server, tool, args)` reach that server's tools inside Agent Hina. Servers whose name contains `terminal`, `android` or `browser` are shown with a warning ("Can control parts of your phone through <server>"), because they can run commands, tap the screen or drive the browser. See [mcp.md](mcp.md).
 
 ## When the user is asked
 
 **First launch.** When an app opens and some declared permissions are still undecided, a dialog titled **<App> wants to** lists them, each with a switch, and says "You can change these later in App info." Switches start on, except broad file access (typed confirmation). The buttons are **Continue** and **Deny all**; when the dialog lists required permissions the second button reads **Don't allow (app can't run)** and leads to the screen that explains the app can't run without them ([below](#required-permissions)). **Continue** stays disabled while a required switch is off.
 
-**When the app asks.** `Agent Hina.permissions.request(name)` shows **Allow <App> to use this?** with **Allow** / **Don't allow**. It asks again even after a denial (there is no "don't ask again"). `request("storage")` asks for every storage folder not granted yet, each with its own switch. A granted or undeclared permission returns at once without a dialog.
+**When the app asks.** `Hina.permissions.request(name)` shows **Allow <App> to use this?** with **Allow** / **Don't allow**. It asks again even after a denial (there is no "don't ask again"). `request("storage")` asks for every storage folder not granted yet, each with its own switch. A granted or undeclared permission returns at once without a dialog.
 
 `"storage"` on its own is a summary of the storage permissions: `prompt` while any declared folder (or all files) is undecided, `granted` only when every one is granted (or, with no folders declared, when a folder was picked), otherwise `denied`, and `undeclared` when there is nothing. So with one folder allowed and one denied it is `denied`: check the folder you need with `query('storage:<path>')`. `query('storage')` works in pages and in workers.
 
@@ -139,7 +139,7 @@ Each MCP server the app declares is its own permission. With it, `Agent Hina.mcp
 
 **Never asked:** background task pages and calls that simply fail. A call to an API whose permission is not granted rejects with `NotAllowedError` (`"notifications" permission is denied`, `… is prompt`, `… is undeclared`); it does not open a prompt. Call `request()` first, for example from a button the user tapped.
 
-The page can follow decisions: `Agent Hina.permissions.all()`, `query(name)` and the `permission` event ([api-reference.md](api-reference.md)).
+The page can follow decisions: `Hina.permissions.all()`, `query(name)` and the `permission` event ([api-reference.md](api-reference.md)).
 
 ## When a declaration changes
 

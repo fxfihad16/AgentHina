@@ -1,7 +1,7 @@
 # Intents, links and device events
 
 Mini apps exchange content the way Android apps do. An app declares in its manifest what it accepts ("share text and
-images"); another app calls `Agent Hina.intent.send()`, the user picks the target in a native sheet, and the target opens
+images"); another app calls `Hina.intent.send()`, the user picks the target in a native sheet, and the target opens
 and receives an `intent` event. Android's own share sheet has a "Mini app" entry that delivers the same way, and
 `hina-miniapp://` links open an app at a path. This page also covers the events about the outside world: the
 page's lifecycle (`resume`, `pause`) and the device's network and battery status.
@@ -28,21 +28,21 @@ No permission is needed to send or receive.
 
 ```js
 // a file: the user picks Pocket Notes, another mini app, or "Other apps…" (Android's share sheet)
-const r = await Agent Hina.intent.send({ action: 'share', path: '/sdcard/DCIM/Camera/IMG_1.jpg', title: 'Sunset' });
+const r = await Hina.intent.send({ action: 'share', path: '/sdcard/DCIM/Camera/IMG_1.jpg', title: 'Sunset' });
 // r = {to: 'com.hina.notes'} | {to: 'android'} | null (cancelled)
 
 // text and a link
-await Agent Hina.intent.send({ action: 'share', text: 'Look at this', url: 'https://example.com' });
+await Hina.intent.send({ action: 'share', text: 'Look at this', url: 'https://example.com' });
 
 // structured data to an app that knows your format
-await Agent Hina.intent.send({ action: 'import-tasks', type: 'application/x-tasks+json', data: { tasks } });
+await Hina.intent.send({ action: 'import-tasks', type: 'application/x-tasks+json', data: { tasks } });
 ```
 
 | Option | Type | Default | Meaning |
 |---|---|---|---|
 | `action` | string | `'share'` | Up to 40 characters |
 | `type` | MIME type | from the file's extension; `'text/uri-list'` with a `url`; else `'text/plain'` | Used to find targets |
-| `path` | string | none | A file the app may read (any [Agent Hina.fs path](files.md#paths)). It must exist (`NotFoundError`) |
+| `path` | string | none | A file the app may read (any [Hina.fs path](files.md#paths)). It must exist (`NotFoundError`) |
 | `text` | string | none | |
 | `url` | string | none | |
 | `title` | string | none | |
@@ -72,18 +72,18 @@ folder, and the receiver needs no storage permission. If the receiver wants to k
 ## Receiving
 
 ```js
-Agent Hina.on('intent', async (it) => {
+Hina.on('intent', async (it) => {
   if (it.action !== 'share') return;
   if (it.path && it.type?.startsWith('image/')) {
-    const blob = await (await fetch(Agent Hina.fs.url(it.path))).blob();   // the grant lasts one day: keep a copy
-    await Agent Hina.fs.write(`data/images/${Date.now()}-${it.path.split('/').pop()}`, blob);
+    const blob = await (await fetch(Hina.fs.url(it.path))).blob();   // the grant lasts one day: keep a copy
+    await Hina.fs.write(`data/images/${Date.now()}-${it.path.split('/').pop()}`, blob);
   }
   addNote([it.title, it.text, it.url].filter(Boolean).join('\n\n'));
-  Agent Hina.ui.toast(`Saved from ${it.from?.name ?? 'another app'}`);
+  Hina.ui.toast(`Saved from ${it.from?.name ?? 'another app'}`);
 });
 
 // or later: the last intent this page received
-if (Agent Hina.intent.current?.action === 'view') openPath(Agent Hina.intent.current.path);
+if (Hina.intent.current?.action === 'view') openPath(Hina.intent.current.path);
 ```
 
 | Field | Meaning |
@@ -99,8 +99,8 @@ if (Agent Hina.intent.current?.action === 'view') openPath(Agent Hina.intent.cur
 - When the app is on screen, every open page gets the event at once. Otherwise the event waits, the app opens, and the
   event is delivered to every page once it has loaded (at most 20 waiting events per app, notifications included).
   Register the listener when the page starts so it doesn't miss it.
-- `Agent Hina.intent.current` holds the last intent the page received (or `null`).
-- The event is the only thing that happens: the app decides what to show (for example `Agent Hina.nav.push`).
+- `Hina.intent.current` holds the last intent the page received (or `null`).
+- The event is the only thing that happens: the app decides what to show (for example `Hina.nav.push`).
 
 ## Android's share sheet: "Mini app"
 
@@ -127,18 +127,18 @@ app.
 
   ```js
   // hina-miniapp://app/com.example.todo/list/42?highlight=7
-  Agent Hina.on('intent', (it) => {
+  Hina.on('intent', (it) => {
     if (it.action !== 'view') return;
     // it = {action: 'view', path: 'list/42', params: {highlight: '7'},
     //       url: 'hina-miniapp://app/com.example.todo/list/42?highlight=7', from: {id: 'link', name: 'Link'}}
     const [, listId] = it.path.split('/');
-    Agent Hina.nav.push('list.html', { id: listId, highlight: it.params.highlight });
+    Hina.nav.push('list.html', { id: listId, highlight: it.params.highlight });
   });
   ```
 
 - The path is not loaded for you; it is only data. Values in `params` are strings.
-- A mini app can't open these links itself (`Agent Hina.device.openUrl` only opens `http(s)`, `mailto` and `tel`): to
-  hand something to another mini app, use `Agent Hina.intent.send`.
+- A mini app can't open these links itself (`Hina.device.openUrl` only opens `http(s)`, `mailto` and `tel`): to
+  hand something to another mini app, use `Hina.intent.send`.
 
 ## Lifecycle events
 
@@ -147,8 +147,8 @@ Each page gets `pause` when its screen leaves the front, and `resume` when it co
 save and stop work nobody sees.
 
 ```js
-Agent Hina.on('resume', () => refreshList());
-Agent Hina.on('pause', () => saveDraft());
+Hina.on('resume', () => refreshList());
+Hina.on('pause', () => saveDraft());
 ```
 
 - The first open sends no `resume`, by design: that is the page's own load. Run your start-up code directly.
@@ -157,10 +157,10 @@ Agent Hina.on('pause', () => saveDraft());
 
 ## Device status
 
-`Agent Hina.device.status()` returns the network and battery now. No permission is needed.
+`Hina.device.status()` returns the network and battery now. No permission is needed.
 
 ```js
-const { network, battery } = await Agent Hina.device.status();
+const { network, battery } = await Hina.device.status();
 if (!network.online) showOfflineBanner();
 if (network.metered) useLowQualityImages();
 if (battery.saver) disableAnimations();
@@ -180,9 +180,9 @@ events when something changes. They are not sent while the page is in the backgr
 you need the current values.
 
 ```js
-Agent Hina.on('network', (n) => setOffline(!n.online));
-Agent Hina.on('battery', (b) => (b.saver ? reduceWork() : null));
-Agent Hina.on('resume', async () => setOffline(!(await Agent Hina.device.status()).network.online));
+Hina.on('network', (n) => setOffline(!n.online));
+Hina.on('battery', (b) => (b.saver ? reduceWork() : null));
+Hina.on('resume', async () => setOffline(!(await Hina.device.status()).network.online));
 ```
 
 ## Limits and errors
