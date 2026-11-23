@@ -1,6 +1,7 @@
 {
   "changelog": [
-    "Agent Hina v1.0.0 — first release"
+    "Agent Hina v1.0.0 — first release",
+    "Liquid Glass theme, Hina mascot, and your own instruction pack (personal build)"
   ],
   "is_critical": false,
   "min_supported_version_code": 1,
